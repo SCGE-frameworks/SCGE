@@ -13,16 +13,16 @@ def get_user(user_id: int):
     return {"message": f"Detalhes do usuario {user_id}"}
 
 
-@router.post("/")
+@router.post("/create")
 def create_user():
     return {"message": "Usuario criado com sucesso"}
 
 
-@router.put("/{user_id}")
+@router.put("/update/{user_id}")
 def update_user(user_id: int):
     return {"message": f"Usuario {user_id} atualizado com sucesso"}
 
 
-@router.delete("/{user_id}")
+@router.delete("/delete/{user_id}")
 def delete_user(user_id: int):
     return {"message": f"Usuario {user_id} removido com sucesso"}

@@ -13,16 +13,16 @@ def get_item(item_id: int):
     return {"message": f"Detalhes do item {item_id}"}
 
 
-@router.post("/")
+@router.post("/create")
 def create_item():
     return {"message": "Item criado com sucesso"}
 
 
-@router.put("/{item_id}")
+@router.put("/update/{item_id}")
 def update_item(item_id: int):
     return {"message": f"Item {item_id} atualizado com sucesso"}
 
 
-@router.delete("/{item_id}")
+@router.delete("/delete/{item_id}")
 def delete_item(item_id: int):
     return {"message": f"Item {item_id} removido com sucesso"}
