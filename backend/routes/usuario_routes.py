@@ -20,8 +20,8 @@ def get_user(user_id: int):
 async def criar_usuario(req: Request, db: Session = Depends(get_db)):
     data = await req.json()
 
-    respose = criar_usuario_service(data, db)
-    return respose
+    response = criar_usuario_service(data, db)
+    return response
 
 @router.put("/update/{user_id}")
 def atualizar_usuario(user_id: int):

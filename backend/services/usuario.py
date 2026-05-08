@@ -25,12 +25,12 @@ def criar_usuario_service(data, db: Session):
     if email_existe:
         return error_message("Email ja cadastrado", code="EMAIL_IN_USE", status_code=400)
 
-    novo_usuario = Usuario(name=nome, email=email, senha=senha)
+    novo_usuario = Usuario(nome=nome, email=email, senha=senha)
     db.add(novo_usuario)
     db.commit()
-    db.refresh()
+    db.refresh(novo_usuario)
 
     return success_message(
         "Usuario cadastrado com sucesso",
-        {"id": novo_usuario.id, "name": novo_usuario.nome, "email": novo_usuario.email},
+        {"id": novo_usuario.id, "name": novo_usuario.nome, "email": novo_usuario.email}
     )
