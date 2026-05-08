@@ -15,3 +15,4 @@ app.include_router(items_router)
 app.include_router(movements_router)
 app.include_router(roles_router)
 app.include_router(categories_router)
+
