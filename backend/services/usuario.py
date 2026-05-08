@@ -1,7 +1,9 @@
+from sqlalchemy.orm import Session
+from models.usuario import Usuario
 from utils.responses import error_message, success_message
-from models import users
 
-def criar_usuario_service(data):
+
+def criar_usuario_service(data, db: Session):
     if not isinstance(data, dict):
         return error_message(
             "Corpo da requisicao deve ser um objeto JSON",
@@ -9,30 +11,26 @@ def criar_usuario_service(data):
             status_code=422,
         )
 
-    name = data.get("name")
+    nome = data.get("nome")
     email = data.get("email")
-    password = data.get("password")
-    if not name or not email or not password:
+    senha = data.get("senha")
+    if not nome or not email or not senha:
         return error_message(
-            "name, email e password sao obrigatorios",
+            "nome, email e senha sao obrigatorios",
             code="MISSING_FIELDS",
             status_code=422,
         )
 
-    for user in users:
-        if user.get("email") == email:
-            return error_message("Email ja cadastrado", code="EMAIL_IN_USE", status_code=400)
+    email_existe = db.query(Usuario).filter(Usuario.email == email).first()
+    if email_existe:
+        return error_message("Email ja cadastrado", code="EMAIL_IN_USE", status_code=400)
 
-    user_id = len(users) + 1
-    users.append(
-        {
-            "id": user_id,
-            "name": name,
-            "email": email,
-            "password": password,
-        }
-    )
+    novo_usuario = Usuario(name=nome, email=email, senha=senha)
+    db.add(novo_usuario)
+    db.commit()
+    db.refresh()
+
     return success_message(
         "Usuario cadastrado com sucesso",
-        {"id": user_id, "name": name, "email": email},
+        {"id": novo_usuario.id, "name": novo_usuario.nome, "email": novo_usuario.email},
     )

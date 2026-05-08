@@ -1,6 +1,9 @@
 from fastapi import FastAPI
 import uvicorn
 
+from database import engine
+from models import Base
+
 app = FastAPI(title="SCGE API")
 
 from routes.autenticacao_routes import router as auth_router
@@ -16,6 +19,8 @@ app.include_router(items_router)
 app.include_router(movements_router)
 app.include_router(roles_router)
 app.include_router(categories_router)
+
+Base.metadata.create_all(bind=engine)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)
