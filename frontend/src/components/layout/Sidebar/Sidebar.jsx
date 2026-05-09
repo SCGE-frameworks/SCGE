@@ -24,29 +24,29 @@ function Sidebar() {
         </p>
       </div>
 
-<nav className="flex flex-1 flex-col gap-2">
-  {menuItems.map((item) => {
-    const Icon = item.icon;
+      <nav className="flex flex-1 flex-col gap-2">
+        {menuItems.map((item) => {
+          const Icon = item.icon;
 
-    return (
-      <NavLink
-        key={item.href}
-        to={item.href}
-        className={({ isActive }) =>
-          [
-            'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
-            isActive
-              ? 'bg-white text-brand-500 shadow-sm'
-              : 'text-slate-500 hover:bg-white hover:text-brand-500',
-          ].join(' ')
-        }
-      >
-        <Icon size={18} />
-        {item.label}
-      </NavLink>
-    );
-  })}
-</nav>
+          return (
+            <NavLink
+              key={item.href}
+              to={item.href}
+              className={({ isActive }) =>
+                [
+                  'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                  isActive
+                    ? 'bg-white text-brand-500 shadow-sm'
+                    : 'text-slate-500 hover:bg-white hover:text-brand-500',
+                ].join(' ')
+              }
+            >
+              <Icon size={18} />
+              {item.label}
+            </NavLink>
+          );
+        })}
+      </nav>
 
       <button className="mt-auto flex items-center gap-3 rounded-md px-3 py-2 text-left text-sm font-medium text-slate-600 transition-colors hover:bg-white hover:text-brand-500">
         <LogOut size={18} />
