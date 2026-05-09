@@ -2,7 +2,7 @@ const variants = {
   primary:
     'bg-brand-500 text-white hover:bg-brand-400 active:bg-brand-600 focus:ring-brand-400',
   secondary:
-    'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 active:bg-slate-100 focus:ring-slate-400',
+    'bg-white text-slate-700 border border-slate-200 hover:shadow active:bg-slate-100 focus:ring-slate-400',
   danger:
     'bg-red-500 text-white hover:bg-red-400 active:bg-red-600 focus:ring-red-400',
 };
@@ -35,8 +35,6 @@ function Button({
         'inline-flex items-center justify-center rounded-md font-medium',
         'transition-all duration-150 ease-in-out',
         'shadow-sm',
-
-        'focus:outline-none focus:ring-2 focus:ring-offset-2',
 
         'disabled:cursor-not-allowed disabled:bg-gray-400 disabled:text-white',
 
