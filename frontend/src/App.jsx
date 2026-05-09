@@ -1,26 +1,50 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { Sidebar } from './components/layout/Sidebar';
-import { Header } from './components/layout/Header';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { AuthenticatedLayout } from './layouts/AuthenticatedLayout';
 
 function App() {
   return (
     <BrowserRouter>
-      <div className="flex min-h-screen bg-slate-50">
-        <Sidebar />
+      <Routes>
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-        <div className="flex flex-1 flex-col">
-          <Header />
+        <Route
+          path="/dashboard"
+          element={
+            <AuthenticatedLayout>
+              <h1 className="text-2xl font-semibold text-slate-900">
+                Dashboard
+              </h1>
+            </AuthenticatedLayout>
+          }
+        />
 
-          <main className="flex-1 px-6 py-8">
-            <Routes>
-              <Route path="/dashboard" element={<h1>Dashboard</h1>} />
-              <Route path="/inventario" element={<h1>Inventário</h1>} />
-              <Route path="/movimentacoes" element={<h1>Movimentações</h1>} />
-              <Route path="/relatorios" element={<h1>Relatórios</h1>} />
-            </Routes>
-          </main>
-        </div>
-      </div>
+        <Route
+          path="/inventario"
+          element={
+            <AuthenticatedLayout>
+              <h1>Inventário</h1>
+            </AuthenticatedLayout>
+          }
+        />
+
+        <Route
+          path="/movimentacoes"
+          element={
+            <AuthenticatedLayout>
+              <h1>Movimentações</h1>
+            </AuthenticatedLayout>
+          }
+        />
+
+        <Route
+          path="/relatorios"
+          element={
+            <AuthenticatedLayout>
+              <h1>Relatórios</h1>
+            </AuthenticatedLayout>
+          }
+        />
+      </Routes>
     </BrowserRouter>
   );
 }
