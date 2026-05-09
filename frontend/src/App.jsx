@@ -1,44 +1,55 @@
-import { Button, Input, Card, Table } from './components';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { Sidebar } from './components/layout/Sidebar';
 
 function App() {
   return (
-    <div className="min-h-screen bg-slate-50 p-10">
-      <div className="mx-auto w-full max-w-3xl">
-        <Table>
-          <thead>
-            <tr className="border-b border-gray-200 text-left text-sm text-gray-500">
-              <th className="px-4 py-2">Produto</th>
-              <th className="px-4 py-2">Categoria</th>
-              <th className="px-4 py-2">Quantidade</th>
-              <th className="px-4 py-2">Status</th>
-            </tr>
-          </thead>
+    <BrowserRouter>
+      <div className="flex min-h-screen bg-slate-50">
+        <Sidebar />
 
-          <tbody className="text-sm text-gray-700">
-            <tr className="border-b border-gray-100">
-              <td className="px-4 py-2">Mouse</td>
-              <td className="px-4 py-2">Periférico</td>
-              <td className="px-4 py-2">450</td>
-              <td className="px-4 py-2 text-green-600">Suficiente</td>
-            </tr>
+        <main className="flex-1 p-8">
+          <Routes>
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-            <tr className="border-b border-gray-100">
-              <td className="px-4 py-2">Notebook</td>
-              <td className="px-4 py-2">Equipamento</td>
-              <td className="px-4 py-2">8</td>
-              <td className="px-4 py-2 text-red-600">Baixo</td>
-            </tr>
+            <Route
+              path="/dashboard"
+              element={
+                <h1 className="font-title text-2xl font-semibold text-slate-950">
+                  Dashboard
+                </h1>
+              }
+            />
 
-            <tr>
-              <td className="px-4 py-2">Cabo HDMI</td>
-              <td className="px-4 py-2">Acessório</td>
-              <td className="px-4 py-2">120</td>
-              <td className="px-4 py-2 text-green-600">Suficiente</td>
-            </tr>
-          </tbody>
-        </Table>
+            <Route
+              path="/inventario"
+              element={
+                <h1 className="font-title text-2xl font-semibold text-slate-950">
+                  Inventário
+                </h1>
+              }
+            />
+
+            <Route
+              path="/movimentacoes"
+              element={
+                <h1 className="font-title text-2xl font-semibold text-slate-950">
+                  Movimentações
+                </h1>
+              }
+            />
+
+            <Route
+              path="/relatorios"
+              element={
+                <h1 className="font-title text-2xl font-semibold text-slate-950">
+                  Relatórios
+                </h1>
+              }
+            />
+          </Routes>
+        </main>
       </div>
-    </div>
+    </BrowserRouter>
   );
 }
 
