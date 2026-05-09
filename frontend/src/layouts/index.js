@@ -1,1 +1,1 @@
-export {};
+export { AuthenticatedLayout } from './AuthenticatedLayout';
