@@ -1,44 +1,51 @@
-import { Button, Input, Card, Table } from './components';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { AuthenticatedLayout } from './layouts/AuthenticatedLayout';
 
 function App() {
   return (
-    <div className="min-h-screen bg-slate-50 p-10">
-      <div className="mx-auto w-full max-w-3xl">
-        <Table>
-          <thead>
-            <tr className="border-b border-gray-200 text-left text-sm text-gray-500">
-              <th className="px-4 py-2">Produto</th>
-              <th className="px-4 py-2">Categoria</th>
-              <th className="px-4 py-2">Quantidade</th>
-              <th className="px-4 py-2">Status</th>
-            </tr>
-          </thead>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-          <tbody className="text-sm text-gray-700">
-            <tr className="border-b border-gray-100">
-              <td className="px-4 py-2">Mouse</td>
-              <td className="px-4 py-2">Periférico</td>
-              <td className="px-4 py-2">450</td>
-              <td className="px-4 py-2 text-green-600">Suficiente</td>
-            </tr>
+        <Route
+          path="/dashboard"
+          element={
+            <AuthenticatedLayout>
+              <h1 className="text-2xl font-semibold text-slate-900">
+                Dashboard
+              </h1>
+            </AuthenticatedLayout>
+          }
+        />
 
-            <tr className="border-b border-gray-100">
-              <td className="px-4 py-2">Notebook</td>
-              <td className="px-4 py-2">Equipamento</td>
-              <td className="px-4 py-2">8</td>
-              <td className="px-4 py-2 text-red-600">Baixo</td>
-            </tr>
+        <Route
+          path="/inventario"
+          element={
+            <AuthenticatedLayout>
+              <h1>Inventário</h1>
+            </AuthenticatedLayout>
+          }
+        />
 
-            <tr>
-              <td className="px-4 py-2">Cabo HDMI</td>
-              <td className="px-4 py-2">Acessório</td>
-              <td className="px-4 py-2">120</td>
-              <td className="px-4 py-2 text-green-600">Suficiente</td>
-            </tr>
-          </tbody>
-        </Table>
-      </div>
-    </div>
+        <Route
+          path="/movimentacoes"
+          element={
+            <AuthenticatedLayout>
+              <h1>Movimentações</h1>
+            </AuthenticatedLayout>
+          }
+        />
+
+        <Route
+          path="/relatorios"
+          element={
+            <AuthenticatedLayout>
+              <h1>Relatórios</h1>
+            </AuthenticatedLayout>
+          }
+        />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
