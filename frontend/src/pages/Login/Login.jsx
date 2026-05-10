@@ -3,13 +3,40 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button, Card, Input } from '../../components/ui';
 import { PublicLayout } from '../../layouts';
+import { listarUsuarios } from '../../services';
 
 function Login() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   function handleSubmit(event) {
     event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const email = String(formData.get('email')).trim().toLowerCase();
+    const password = String(formData.get('password'));
+
+    if (!password) {
+      setErrorMessage('Informe sua senha para acessar o sistema.');
+      return;
+    }
+
+    const user = listarUsuarios().find(
+      (mockedUser) => mockedUser.email.toLowerCase() === email,
+    );
+
+    if (!user) {
+      setErrorMessage('E-mail não encontrado. Verifique o endereço informado.');
+      return;
+    }
+
+    const { id, name, role } = user;
+    localStorage.setItem(
+      'scge:user',
+      JSON.stringify({ id, name, email: user.email, role }),
+    );
+
+    setErrorMessage('');
     navigate('/dashboard');
   }
 
@@ -68,6 +95,15 @@ function Login() {
             />
             Lembrar de mim
           </label>
+
+          {errorMessage && (
+            <div
+              role="alert"
+              className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm leading-6 text-red-700"
+            >
+              {errorMessage}
+            </div>
+          )}
 
           <Button type="submit" size="lg" className="w-full">
             Entrar no Sistema
