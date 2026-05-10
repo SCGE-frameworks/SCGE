@@ -5,7 +5,7 @@ import {
   FileText,
   LogOut,
 } from 'lucide-react';
-import { NavLink } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 
 const menuItems = [
   { label: 'Dashboard', icon: LayoutDashboard, href: '/dashboard' },
@@ -48,10 +48,13 @@ function Sidebar() {
         })}
       </nav>
 
-      <button className="mt-auto flex items-center gap-3 rounded-md px-3 py-2 text-left text-sm font-medium text-slate-600 transition-colors hover:bg-white hover:text-brand-500">
+      <Link
+        to="/login"
+        className="mt-auto flex items-center gap-3 rounded-md px-3 py-2 text-left text-sm font-medium text-slate-600 transition-colors hover:bg-white hover:text-brand-500"
+      >
         <LogOut size={18} />
         Sair
-      </button>
+      </Link>
     </aside>
   );
 }
