@@ -2,17 +2,22 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button, Card, Input } from '../../components/ui';
 import { PublicLayout } from '../../layouts';
+import { listarUsuarios } from '../../services';
 
 function ForgotPassword() {
+  const [email, setEmail] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
   function handleSubmit(event) {
     event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const email = String(formData.get('email')).trim().toLowerCase();
 
-    if (email === 'naoencontrado@scge.com') {
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = listarUsuarios().find(
+      (mockedUser) => mockedUser.email.toLowerCase() === normalizedEmail,
+    );
+
+    if (!user) {
       setSuccessMessage('');
       setErrorMessage(
         'Nenhuma conta encontrada. Verifique seu e-mail e tente novamente.',
@@ -45,6 +50,8 @@ function ForgotPassword() {
             type="email"
             placeholder="seu.email@exemplo.com"
             autoComplete="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
             required
           />
 
