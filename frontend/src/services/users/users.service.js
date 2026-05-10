@@ -1,7 +1,8 @@
 let users = [
-  { id: 1, name: 'Diogo',    email: 'diogo@email.com',    role: 'Administrador' },
-  { id: 2, name: 'Dirceu',   email: 'dirceu@email.com',   role: 'Administrador' },
-  { id: 3, name: 'Fernando', email: 'fernando@email.com', role: 'Operador' },
+  { id: 1, name: 'Admin', email: 'admin@scge.com', role: 'Administrador' },
+  { id: 2, name: 'Diogo Queiroz', email: 'diogo.queiroz@scge.com', role: 'Administrador' },
+  { id: 3, name: 'Dirceu Neto', email: 'dirceu.neto@scge.com', role: 'Administrador' },
+  { id: 4, name: 'Fernando Tinno', email: 'fernando.tinno@scge.com', role: 'Operador' },
 ];
 
 export const listarUsuarios = () => users;
