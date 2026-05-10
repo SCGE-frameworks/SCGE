@@ -12,6 +12,8 @@ const coresCategoria = {
 function Inventario() {
   const [items, setItems] = useState([]);
   const [categorias, setCategorias] = useState([]);
+  const [categoriaFiltro, setCategoriaFiltro] = useState('');
+  const [statusFiltro, setStatusFiltro] = useState('');
 
   useEffect(() => {
     setItems(listarItens());
@@ -26,6 +28,12 @@ function Inventario() {
 
   const obterStatus = (item) =>
     item.quantity < item.min_quantity ? 'Baixo' : 'Suficiente';
+
+  const itensFiltrados = items.filter((item) => {
+    if (categoriaFiltro && item.category_id !== Number(categoriaFiltro)) return false;
+    if (statusFiltro && obterStatus(item) !== statusFiltro) return false;
+    return true;
+  });
 
   return (
     <section className="space-y-6">
@@ -53,6 +61,29 @@ function Inventario() {
         </div>
       </div>
 
+      <div className="flex gap-3 rounded-xl bg-slate-100 p-4">
+        <select
+          value={categoriaFiltro}
+          onChange={(e) => setCategoriaFiltro(e.target.value)}
+          className="rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-medium uppercase text-slate-700 shadow-sm hover:border-slate-300"
+        >
+          <option value="">Categoria</option>
+          {categorias.map((c) => (
+            <option key={c.id} value={c.id}>{c.name}</option>
+          ))}
+        </select>
+
+        <select
+          value={statusFiltro}
+          onChange={(e) => setStatusFiltro(e.target.value)}
+          className="rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-medium uppercase text-slate-700 shadow-sm hover:border-slate-300"
+        >
+          <option value="">Status</option>
+          <option value="Suficiente">Suficiente</option>
+          <option value="Baixo">Baixo</option>
+        </select>
+      </div>
+
       <Card>
         <Table>
           <thead>
@@ -66,7 +97,7 @@ function Inventario() {
             </tr>
           </thead>
           <tbody>
-            {items.map((item) => {
+            {itensFiltrados.map((item) => {
               const categoria = buscarCategoria(item.category_id);
               const status = obterStatus(item);
 
