@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { PageWrapper } from '../../components/layout/PageWrapper';
+import { AlertTriangle } from 'lucide-react';
 import { Card, Table } from '../../components/ui';
 import { listarItens, listarCategorias } from '../../services';
 
@@ -18,6 +18,9 @@ function Inventario() {
     setCategorias(listarCategorias());
   }, []);
 
+  const totalItens = items.length;
+  const estoqueBaixo = items.filter((i) => i.quantity < i.min_quantity).length;
+
   const buscarCategoria = (categoryId) =>
     categorias.find((c) => c.id === categoryId);
 
@@ -25,10 +28,31 @@ function Inventario() {
     item.quantity < item.min_quantity ? 'Baixo' : 'Suficiente';
 
   return (
-    <PageWrapper
-      title="Inventário"
-      description="Gerencie os produtos cadastrados"
-    >
+    <section className="space-y-6">
+      <div className="flex items-start justify-between gap-6">
+        <div>
+          <h1 className="text-2xl font-semibold text-slate-900">Inventário Geral</h1>
+          <p className="mt-1 text-sm text-slate-500">
+            Gerencie o fluxo de entrada e saída de materiais com precisão.
+          </p>
+        </div>
+
+        <div className="flex gap-3">
+          <div className="rounded-xl border border-slate-200 border-l-4 border-l-brand-500 bg-white px-5 py-3 shadow-sm">
+            <p className="text-xs font-medium uppercase text-slate-500">Total Itens</p>
+            <p className="mt-1 text-2xl font-bold text-brand-500">{totalItens}</p>
+          </div>
+
+          <div className="flex items-center gap-3 rounded-xl border border-orange-200 border-l-4 border-l-orange-500 bg-orange-50 px-5 py-3 shadow-sm">
+            <div>
+              <p className="text-xs font-medium uppercase text-orange-700">Estoque Baixo</p>
+              <p className="mt-1 text-2xl font-bold text-orange-700">{estoqueBaixo}</p>
+            </div>
+            <AlertTriangle size={20} className="text-orange-500" />
+          </div>
+        </div>
+      </div>
+
       <Card>
         <Table>
           <thead>
@@ -73,7 +97,7 @@ function Inventario() {
           </tbody>
         </Table>
       </Card>
-    </PageWrapper>
+    </section>
   );
 }
 
