@@ -5,7 +5,7 @@ import {
   FileText,
   LogOut,
 } from 'lucide-react';
-import { NavLink } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 
 const menuItems = [
   { label: 'Dashboard', icon: LayoutDashboard, href: '/dashboard' },
@@ -15,6 +15,10 @@ const menuItems = [
 ];
 
 function Sidebar() {
+  function handleLogout() {
+    localStorage.removeItem('scge:user');
+  }
+
   return (
     <aside className="flex min-h-screen w-64 flex-col bg-slate-200 p-6 text-slate-700">
       <div className="mb-8">
@@ -48,10 +52,14 @@ function Sidebar() {
         })}
       </nav>
 
-      <button className="mt-auto flex items-center gap-3 rounded-md px-3 py-2 text-left text-sm font-medium text-slate-600 transition-colors hover:bg-white hover:text-brand-500">
+      <Link
+        to="/login"
+        onClick={handleLogout}
+        className="mt-auto flex items-center gap-3 rounded-md px-3 py-2 text-left text-sm font-medium text-slate-600 transition-colors hover:bg-white hover:text-brand-500"
+      >
         <LogOut size={18} />
         Sair
-      </button>
+      </Link>
     </aside>
   );
 }
