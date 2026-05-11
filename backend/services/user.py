@@ -1,9 +1,9 @@
 from sqlalchemy.orm import Session
-from models.usuario import Usuario
+from models.user import User
 from utils.responses import error_message, success_message
 
 
-def criar_usuario_service(data, db: Session):
+def create_user_service(data, db: Session):
     if not isinstance(data, dict):
         return error_message(
             "Corpo da requisicao deve ser um objeto JSON",
@@ -21,16 +21,16 @@ def criar_usuario_service(data, db: Session):
             status_code=422,
         )
 
-    email_existe = db.query(Usuario).filter(Usuario.email == email).first()
+    email_existe = db.query(User).filter(User.email == email).first()
     if email_existe:
         return error_message("Email ja cadastrado", code="EMAIL_IN_USE", status_code=400)
 
-    novo_usuario = Usuario(nome=nome, email=email, senha=senha)
-    db.add(novo_usuario)
+    new_user = User(nome=nome, email=email, senha=senha)
+    db.add(new_user)
     db.commit()
-    db.refresh(novo_usuario)
+    db.refresh(new_user)
 
     return success_message(
         "Usuario cadastrado com sucesso",
-        {"id": novo_usuario.id, "name": novo_usuario.nome, "email": novo_usuario.email}
+        {"id": new_user.id, "name": new_user.nome, "email": new_user.email}
     )

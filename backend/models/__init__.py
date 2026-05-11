@@ -1,4 +1,4 @@
 from database import Base
-from .usuario import Usuario
+from .user import User
 
-__all__ = ["Usuario"]
+__all__ = ["User"]

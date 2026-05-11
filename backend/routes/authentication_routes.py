@@ -4,19 +4,19 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 
 @router.post("/login")
-def fazer_login():
+def login():
     pass
 
 @router.post("/register")
-def cadastrar():
+def register():
     pass
 
 @router.post("/logout")
-def fazer_logout():
+def logout():
     pass
 
 @router.post("/forgot-password")
-def esqueci_minha_senha():
+def forgot_password():
     pass
 
 

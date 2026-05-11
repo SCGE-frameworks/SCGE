@@ -2,12 +2,12 @@ from fastapi import APIRouter, Request, Depends
 from sqlalchemy.orm import Session
 
 from database import get_db
-from services.usuario import criar_usuario_service
+from services.user import create_user_service
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
 @router.get("/")
-def listar_usuarios():
+def list_users():
     return {"message": "Lista de usuarios"}
 
 
@@ -17,17 +17,17 @@ def get_user(user_id: int):
 
 
 @router.post("/create")
-async def criar_usuario(req: Request, db: Session = Depends(get_db)):
+async def create_user(req: Request, db: Session = Depends(get_db)):
     data = await req.json()
 
-    response = criar_usuario_service(data, db)
+    response = create_user_service(data, db)
     return response
 
 @router.put("/update/{user_id}")
-def atualizar_usuario(user_id: int):
+def update_user(user_id: int):
     return {"message": f"Usuario {user_id} atualizado com sucesso"}
 
 
 @router.delete("/delete/{user_id}")
-def deletar_usuario(user_id: int):
+def delete_user(user_id: int):
     return {"message": f"Usuario {user_id} removido com sucesso"}
