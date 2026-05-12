@@ -3,17 +3,17 @@ from fastapi import APIRouter
 router = APIRouter(prefix="/movements", tags=["Stocks Movements"])
 
 @router.get("/")
-def listar_movimentacoes():
+def list_movements():
     return {"message": "Lista de movimentações de estoque"}
 
 @router.post("/create_entry")
-def cadastrar_entrada():
+def register_entry():
     return {"message": "Entrada de estoque cadastrada com sucesso!"}
 
 @router.post("/create_exit")
-def cadastrar_saida():
+def register_exit():
     return {"message": "Saída de estoque cadastrada com sucesso!"}
 
 @router.get("/{movement_id}")
-def detalhes_movimentacao(movement_id: int):
+def get_movement_details(movement_id: int):
     return {"message": f"Detalhes da movimentação de estoque {movement_id}"}
