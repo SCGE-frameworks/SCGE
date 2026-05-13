@@ -27,7 +27,7 @@ const formatarData = (iso) => {
 
 function Movimentacoes() {
   const [movimentacoes, setMovimentacoes] = useState([]);
-  const [periodo, setPeriodo] = useState('hoje');
+  const [periodo, setPeriodo] = useState('semana');
   const [ordenar, setOrdenar] = useState('recentes');
   const [produto, setProduto] = useState('');
   const [operacao, setOperacao] = useState('IN');
