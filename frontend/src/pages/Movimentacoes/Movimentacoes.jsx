@@ -106,6 +106,39 @@ function Movimentacoes() {
           </div>
         </div>
       </Card>
+      <Card className="!p-0 mt-6">
+        <div className="px-6 py-4 bg-slate-50 border-b border-slate-100">
+          <h3 className="font-bold">Histórico</h3>
+        </div>
+        <Table>
+          <thead>
+            <tr className="border-b bg-slate-50 text-xs uppercase">
+              <th className="px-6 py-3 text-left">Data</th>
+              <th className="px-6 py-3 text-left">Produto</th>
+              <th className="px-6 py-3 text-left">Tipo</th>
+              <th className="px-6 py-3 text-center">Qtd</th>
+              <th className="px-6 py-3 text-left">Motivo</th>
+            </tr>
+          </thead>
+          <tbody>
+            {listaFiltrada.length === 0 ? (
+              <tr><td colSpan={5} className="px-6 py-8 text-center text-sm text-slate-400">Sem registros</td></tr>
+            ) : listaFiltrada.map((m) => (
+              <tr key={m.id || Math.random()} className="border-b hover:bg-slate-50">
+                <td className="px-6 py-4 text-sm">{formatarData(m.created_at).dia} às {formatarData(m.created_at).hora}</td>
+                <td className="px-6 py-4 text-sm font-medium">{m.item_name}</td>
+                <td className="px-6 py-4">
+                  <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 w-fit ${TIPO_CONFIG[m.type]?.cor || ''}`}>
+                    {TIPO_CONFIG[m.type]?.icone} {TIPO_CONFIG[m.type]?.label || m.type}
+                  </span>
+                </td>
+                <td className="px-6 py-4 text-center text-sm font-bold">{m.quantity}</td>
+                <td className="px-6 py-4 text-sm">{m.reason}</td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      </Card>
     </PageWrapper>
   );
 }
