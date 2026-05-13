@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Button, Card, Input, Table } from '../../components/ui';
 import { listarMovimentacoes, registrarEntrada, registrarSaida, registrarAjuste } from '../../services';
 
-import { ArrowDownCircle, ArrowUpCircle, AlertTriangle } from 'lucide-react';
+import { ArrowDownCircle, ArrowUpCircle, AlertTriangle, PlusCircle } from 'lucide-react';
 
 const TIPO_CONFIG = {
   IN: { label: 'ENTRADA', cor: 'bg-green-100 text-green-700 border border-green-200', icone: <ArrowDownCircle size={13} /> },
@@ -72,7 +72,40 @@ function Movimentacoes() {
   };
   return (
     <PageWrapper title="Movimentações" description="Gerencie entrada e saída de produtos">
+      <Card className="space-y-4">
+        <h2 className="flex items-center gap-2 text-lg font-bold text-brand-500">
+          <PlusCircle size={20} /> Nova Operação
+        </h2>
 
+        <Input label="PRODUTO" value={produto} onChange={(e) => setProduto(e.target.value)} placeholder="Nome do produto" />
+
+        <div className="grid grid-cols-3 gap-4">
+          <div>
+            <label className="text-xs font-medium text-gray-600">OPERAÇÃO</label>
+            <select value={operacao} onChange={(e) => setOperacao(e.target.value)} className="h-11 w-full rounded-md border border-gray-300 bg-white px-3 text-sm">
+              <option value="IN">Entrada</option>
+              <option value="OUT">Saída</option>
+              <option value="ADJUSTMENT">Ajuste</option>
+            </select>
+          </div>
+          <Input label="QTD" type="number" min="1" value={quantidade} onChange={(e) => setQtd(e.target.value)} />
+          <Input label="DATA" type="date" value={data} onChange={(e) => setData(e.target.value)} />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="text-xs font-medium text-gray-600">MOTIVO</label>
+            <select value={motivo} onChange={(e) => setMotivo(e.target.value)} className="h-11 w-full rounded-md border border-gray-300 bg-white px-3 text-sm">
+              <option value="">Selecione</option>
+              {MOTIVOS.map((m) => <option key={m} value={m}>{m}</option>)}
+            </select>
+          </div>
+          <div className="flex gap-2 items-end">
+            <Button variant="primary" onClick={handleRegistrar} disabled={invalido} className="flex-1">Registrar</Button>
+            <Button variant="secondary" onClick={handleLimpar} className="px-4">Limpar</Button>
+          </div>
+        </div>
+      </Card>
     </PageWrapper>
   );
 }
