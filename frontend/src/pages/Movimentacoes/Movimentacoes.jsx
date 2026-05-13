@@ -1,12 +1,8 @@
-import { PageWrapper } from '../../components/layout/PageWrapper';
+import PageWrapper from '../../components/PageWrapper';
 
 function Movimentacoes() {
   return (
-    <PageWrapper
-      title="Movimentações"
-      description="Acompanhe entradas e saídas do estoque"
-    >
-      <div />
+    <PageWrapper title="Movimentações" description="Gerencie entrada e saída de produtos">
     </PageWrapper>
   );
 }
