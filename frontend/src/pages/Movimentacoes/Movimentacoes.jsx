@@ -1,4 +1,4 @@
-import PageWrapper from '../../components/PageWrapper';
+import { PageWrapper } from "../../components/layout/PageWrapper";
 import { useState, useEffect } from 'react';
 import { Button, Card, Input, Table } from '../../components/ui';
 import { listarMovimentacoes, registrarEntrada, registrarSaida, registrarAjuste } from '../../services';
