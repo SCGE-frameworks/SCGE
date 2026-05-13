@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
+import ModalProduto from '../Inventario/ModalProduto'; // Ajuste o caminho se necessário
+import ModalRelatorio from '../Relatorios/ModalRelatorio';
 
-// Mocks atualizados alinhados com o Inventário (Item A ao C)
 const mockAtividades = [
   { id: 1, tipo: 'ENTRADA DE ATIVO', descricao: 'Item A', data: '12/05/2026', valor: '+10 un' },
   { id: 2, tipo: 'SAÍDA DE ATIVO', descricao: 'Item B', data: '12/05/2026', valor: '-2 un' },
@@ -8,6 +9,17 @@ const mockAtividades = [
 ];
 
 export default function Dashboard() {
+  // ESTADOS PARA CONTROLE DOS MODAIS
+  const [modalProdutoAberto, setModalProdutoAberto] = useState(false);
+  const [modalRelatorioAberto, setModalRelatorioAberto] = useState(false);
+
+  // Categorias mockadas para passar aos modais
+  const categoriasMock = [
+    { id: 1, name: 'Categoria A' },
+    { id: 2, name: 'Categoria B' },
+    { id: 3, name: 'Categoria C' }
+  ];
+
   return (
     <div className="p-8 bg-slate-50 min-h-screen font-sans">
       <header className="mb-8">
@@ -50,59 +62,38 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Grid Principal - 2 Colunas */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        {/* Coluna Esquerda (Gráfico e Atividades) */}
         <div className="lg:col-span-2 space-y-8">
-          
-          {/* Gráfico de Movimentações */}
           <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-6 font-title">Movimentações por Categoria</h2>
             <div className="h-64 flex items-end justify-between gap-2 pb-6 border-b border-slate-100">
               {[40, 70, 45, 90, 60, 30, 80].map((height, i) => (
                 <div key={i} className="w-1/6 bg-brand-500 rounded-t-md relative" style={{ height: `${height}%` }}>
-                  <div className="absolute -top-7 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs font-bold py-1 px-2 rounded">
-                    {height}
-                  </div>
+                  <div className="absolute -top-7 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs font-bold py-1 px-2 rounded">{height}</div>
                 </div>
               ))}
             </div>
             <div className="flex justify-between mt-4 text-xs text-slate-400 font-medium px-2">
-              <span>Categoria A</span>
-              <span>Categoria B</span>
-              <span>Categoria C</span>
-              <span>Categoria D</span>
-              <span>Categoria E</span>
-              <span>Categoria F</span>
-              <span>Categoria G</span>
+              <span>Categoria A</span><span>Categoria B</span><span>Categoria C</span><span>Categoria D</span><span>Categoria E</span><span>Categoria F</span><span>Categoria G</span>
             </div>
           </div>
 
-          {/* Atividades Recentes */}
           <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-lg font-semibold text-gray-900 font-title">Atividades Recentes</h2>
               <button className="text-brand-500 hover:text-brand-600 text-sm font-medium">Ver todas</button>
             </div>
-            
             <div className="space-y-4">
               {mockAtividades.map((atividade) => (
                 <div key={atividade.id} className="flex items-center justify-between py-3 border-b border-slate-50 last:border-0">
                   <div className="flex items-center gap-4">
-                    <div className={`w-2 h-2 rounded-full ${
-                      atividade.tipo.includes('ENTRADA') ? 'bg-green-500' : 
-                      atividade.tipo.includes('SAÍDA') ? 'bg-red-500' : 'bg-slate-400'
-                    }`}></div>
+                    <div className={`w-2 h-2 rounded-full ${atividade.tipo.includes('ENTRADA') ? 'bg-green-500' : atividade.tipo.includes('SAÍDA') ? 'bg-red-500' : 'bg-slate-400'}`}></div>
                     <div>
                       <p className="text-sm font-medium text-gray-900">{atividade.descricao}</p>
                       <p className="text-xs text-slate-500">{atividade.tipo} • {atividade.data}</p>
                     </div>
                   </div>
-                  <span className={`text-sm font-bold ${
-                    atividade.tipo.includes('ENTRADA') ? 'text-green-600' : 
-                    atividade.tipo.includes('SAÍDA') ? 'text-red-600' : 'text-slate-600'
-                  }`}>
+                  <span className={`text-sm font-bold ${atividade.tipo.includes('ENTRADA') ? 'text-green-600' : atividade.tipo.includes('SAÍDA') ? 'text-red-600' : 'text-slate-600'}`}>
                     {atividade.valor}
                   </span>
                 </div>
@@ -111,14 +102,15 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Coluna Direita (Ações Rápidas e Alertas) */}
         <div className="space-y-8">
-          
-          {/* Ações Rápidas */}
+          {/* AÇÕES RÁPIDAS COM MODAIS INTEGRADOS */}
           <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4 font-title">Ações Rápidas</h2>
             <div className="grid grid-cols-2 gap-4">
-              <button className="flex flex-col items-center justify-center p-4 rounded-lg bg-brand-50 hover:bg-brand-100 text-brand-600 transition-colors border border-brand-100">
+              <button 
+                onClick={() => setModalProdutoAberto(true)}
+                className="flex flex-col items-center justify-center p-4 rounded-lg bg-brand-50 hover:bg-brand-100 text-brand-600 transition-colors border border-brand-100"
+              >
                 <svg className="w-6 h-6 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path></svg>
                 <span className="text-sm font-medium">Novo Produto</span>
               </button>
@@ -126,14 +118,16 @@ export default function Dashboard() {
                 <svg className="w-6 h-6 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
                 <span className="text-sm font-medium">Movimentar</span>
               </button>
-              <button className="flex flex-col items-center justify-center p-4 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-600 transition-colors border border-slate-200 col-span-2">
+              <button 
+                onClick={() => setModalRelatorioAberto(true)}
+                className="flex flex-col items-center justify-center p-4 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-600 transition-colors border border-slate-200 col-span-2"
+              >
                 <svg className="w-6 h-6 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                 <span className="text-sm font-medium">Gerar Relatório</span>
               </button>
             </div>
           </div>
 
-          {/* Itens em Alerta - Apenas Item B */}
           <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
              <h2 className="text-lg font-semibold text-gray-900 mb-4 font-title">Itens em Alerta</h2>
              <ul className="space-y-4">
@@ -145,9 +139,21 @@ export default function Dashboard() {
                ))}
              </ul>
           </div>
-
         </div>
       </div>
+
+      {/* RENDERIZAÇÃO DOS MODAIS */}
+      <ModalProduto 
+        isOpen={modalProdutoAberto} 
+        onClose={() => setModalProdutoAberto(false)} 
+        categorias={categoriasMock} 
+      />
+      
+      <ModalRelatorio 
+        isOpen={modalRelatorioAberto} 
+        onClose={() => setModalRelatorioAberto(false)} 
+        categorias={['Categoria A', 'Categoria B', 'Categoria C']}
+      />
     </div>
   );
 }
