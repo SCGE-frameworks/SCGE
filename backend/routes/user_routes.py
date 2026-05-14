@@ -11,7 +11,6 @@ router = APIRouter(prefix="/users", tags=["Users"])
 def list_users():
     return {"message": "Lista de usuarios"}
 
-
 @router.get("/{user_id}")
 def get_user(user_id: int, db: Session = Depends(get_db)):
     return get_user_service(user_id, db)
