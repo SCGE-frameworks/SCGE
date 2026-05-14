@@ -27,7 +27,7 @@ As rotas atuais estao em formato base (MVP inicial), com respostas de exemplo pa
 ### Frontend (planejado)
 
 - React
-- Figma (prototipacao)
+- [Figma](https://www.figma.com/file/axawXFROpTsEGqkq5cjCMz?node-id=3:18&locale=pt-br&type=design)
 
 ### Banco de dados (planejado)
 
