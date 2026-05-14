@@ -1,8 +1,19 @@
+import email
 from sqlalchemy.orm import Session
 from schemas.user_schemas import UserCreate
 from models.user import User
 from utils.responses import error_message, success_message
 
+def get_user_service(user_id: int, db: Session):
+
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        return error_message("Usuario nao encontrado", code="USER_NOT_FOUND", status_code=404)
+
+    return success_message(
+        "Usuario encontrado com sucesso",
+        {"id": user.id, "nome": user.nome, "email": user.email}
+    )
 
 def create_user_service(user: UserCreate, db: Session):
 
