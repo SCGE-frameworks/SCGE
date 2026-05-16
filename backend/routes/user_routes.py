@@ -3,13 +3,13 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from schemas.user_schemas import UserCreate
-from services.user_services import create_user_service, get_user_service
+from services.user_services import create_user_service, get_user_service, get_users_service
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
 @router.get("/")
-def list_users():
-    return {"message": "Lista de usuarios"}
+def list_users(db: Session = Depends(get_db)):
+    return get_users_service(db)
 
 @router.get("/{user_id}")
 def get_user(user_id: int, db: Session = Depends(get_db)):

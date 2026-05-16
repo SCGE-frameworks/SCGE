@@ -4,6 +4,14 @@ from schemas.user_schemas import UserCreate
 from models.user import User
 from utils.responses import error_message, success_message
 
+def get_users_service(db: Session):
+    
+    users = db.query(User).all()
+    if not users:
+        return error_message("Nenhum usuário encontrado", code="USERS_NOT_FOUND", status_code=404)
+    
+    return success_message("Usuários encontrados com sucesso", data=users)
+
 def get_user_service(user_id: int, db: Session):
 
     user = db.query(User).filter(User.id == user_id).first()
