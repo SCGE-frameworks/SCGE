@@ -6,8 +6,8 @@ class CategoriaCreate(BaseModel):
     descricao: str = Field(min_length=3, max_length=255)
 
 class CategoriaUpdate(BaseModel):
-    nome: Optional[str] = Field(min_length=3, max_length=255)
-    descricao: Optional[str] = Field(min_length=3, max_length=255)
+    nome: Optional[str] = Field(default=None, min_length=3, max_length=255)
+    descricao: Optional[str] = Field(default=None, min_length=3, max_length=255)
 
 
 class CategoriaResponse(BaseModel):
