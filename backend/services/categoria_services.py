@@ -76,9 +76,8 @@ def delete_categoria_service(category_id: int, db: Session):
     if not categoria:
         return error_message("Categoria nao encontrada", code="CATEGORIA_NOT_FOUND", status_code=404)
 
-    categoria.ativo = False
+    db.delete(categoria)
     db.commit()
-    db.refresh(categoria)
     return success_message(
         "Categoria excluida com sucesso",
         {"id": categoria.id, "nome": categoria.nome, "descricao": categoria.descricao}
