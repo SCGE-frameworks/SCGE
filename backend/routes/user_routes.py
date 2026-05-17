@@ -23,6 +23,7 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
     response = create_user_service(user, db)
     return response
 
+@router.patch("/update/{user_id}")
 @router.put("/update/{user_id}")
 def update_user(user_id: int):
     return {"message": f"Usuario {user_id} atualizado com sucesso"}
