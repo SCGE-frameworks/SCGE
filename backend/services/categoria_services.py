@@ -31,9 +31,15 @@ def create_categoria_service(categoria: CategoriaCreate, db: Session):
 def get_categoria_service(category_id: int, db: Session):
     if category_id == -1:
         categorias = db.query(Categoria).all()
-        return success_message(
+        if categorias:
+            return success_message(
             "Lista de categorias",
             [{"id": c.id, "nome": c.nome, "descricao": c.descricao} for c in categorias]
+        )
+        else:
+            return success_message(
+            "Nenhuma categoria encontrada",
+            []
         )
     
     categoria = db.query(Categoria).filter(Categoria.id == category_id).first()
