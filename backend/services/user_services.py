@@ -1,4 +1,3 @@
-import email
 from sqlalchemy.orm import Session
 from schemas.user_schemas import UserCreate
 from models.user import User
@@ -9,8 +8,13 @@ def get_users_service(db: Session):
     users = db.query(User).all()
     if not users:
         return error_message("Nenhum usuário encontrado", code="USERS_NOT_FOUND", status_code=404)
+
+    user_data = []
+
+    for user in users:
+        user_data.append({"id": user.id, "nome": user.nome, "email": user.email})
     
-    return success_message("Usuários encontrados com sucesso", data=users)
+    return success_message("Usuários encontrados com sucesso", data={"users": user_data})
 
 def get_user_service(user_id: int, db: Session):
 
