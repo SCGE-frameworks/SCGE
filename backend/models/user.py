@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, Integer, String
 from database import Base
 
 class User(Base):
@@ -8,4 +8,5 @@ class User(Base):
     nome = Column(String)
     email = Column(String)
     senha = Column(String)
+    ativo = Column(Boolean, default=True)
     # cargo_id = Column(Integer, ForeignKey("cargos.id"))
