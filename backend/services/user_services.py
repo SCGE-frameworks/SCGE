@@ -1,5 +1,6 @@
+from sqlalchemy import Null
 from sqlalchemy.orm import Session
-from schemas.user_schemas import UserCreate
+from schemas.user_schemas import UserCreate, UserUpdate
 from models.user import User
 from utils.responses import error_message, success_message
 
@@ -51,4 +52,30 @@ def create_user_service(user: UserCreate, db: Session):
     return success_message(
         "Usuario cadastrado com sucesso",
         {"id": new_user.id, "nome": new_user.nome, "email": new_user.email}
+    )
+
+def update_user_service(user_id: int, data: UserUpdate, db: Session):
+    
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        return error_message()
+    
+    if data.email and data.email != user.email:
+        email_existing = db.query(User).filter(User.email == data.email).first()
+        if email_existing:
+            return error_message("Email ja cadastrado", code="EMAIL_IN_USE", status_code=400)
+
+    if data.nome is not None:
+        user.nome = data.nome
+    if data.email is not None:
+        user.email = data.email
+    if data.senha is not None:
+        user.senha = data.senha
+    
+    db.commit()
+    db.refresh(user)
+
+    return success_message(
+        "Usuario atualizado com sucesso",
+        {"id": user.id, "nome": user.nome, "email": user.email},
     )
