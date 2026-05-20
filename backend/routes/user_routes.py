@@ -18,10 +18,8 @@ def get_user(user_id: int):
 
 
 @router.post("/create")
-def create_user(user: UserCreate, db: Session = Depends(get_db)):
-
-    response = create_user_service(user, db)
-    return response
+def create_user(user_data: UserCreate, db: Session = Depends(get_db)):
+    return create_user_service(user_data, db)
 
 @router.put("/update/{user_id}")
 def update_user(user_id: int):
