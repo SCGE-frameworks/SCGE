@@ -12,6 +12,7 @@ from routes.user_routes import router as users_router
 from routes.movement_routes import router as movements_router
 from routes.role_routes import router as roles_router
 from routes.category_routes import router as categories_router
+from routes.product_routes import router as products_router
 
 app.include_router(auth_router)
 app.include_router(users_router)
@@ -19,6 +20,7 @@ app.include_router(items_router)
 app.include_router(movements_router)
 app.include_router(roles_router)
 app.include_router(categories_router)
+app.include_router(products_router)
 
 Base.metadata.create_all(bind=engine)
 
