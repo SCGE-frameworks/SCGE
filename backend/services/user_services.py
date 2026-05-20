@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from schemas.user_schemas import UserCreate, UserUpdate
 from models.user import User
 from utils.responses import error_message, success_message
+from utils.auth import hash_password
 
 def get_users_service(db: Session):
     
@@ -44,7 +45,10 @@ def create_user_service(user: UserCreate, db: Session):
     if email_existing:
         return error_message("Email ja cadastrado", code="EMAIL_IN_USE", status_code=400)
 
-    new_user = User(nome=nome, email=email, senha=senha)
+    hashed_password = hash_password(senha)
+    print(len(hashed_password))
+
+    new_user = User(nome=nome, email=email, senha=hashed_password)
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
@@ -70,7 +74,7 @@ def update_user_service(user_id: int, data: UserUpdate, db: Session):
     if data.email is not None:
         user.email = data.email
     if data.senha is not None:
-        user.senha = data.senha
+        user.senha = hash_password(data.senha)
     
     db.commit()
     db.refresh(user)
