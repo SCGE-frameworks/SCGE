@@ -1,28 +1,41 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
 
-router = APIRouter(prefix="/category", tags=["Categories"])
+from database import get_db
+from schemas.category_schemas import CategoryCreate, CategoryUpdate
+from services.category_services import (
+    create_category_service,
+    delete_category_service,
+    get_category_by_id_service,
+    list_categories_service,
+    update_category_service,
+)
+
+router = APIRouter(prefix="/categories", tags=["Categories"])
+
 
 @router.get("/")
-def list_categories():
-    return {"message": "Lista de categorias"}
+def list_categories(db: Session = Depends(get_db)):
+    return list_categories_service(db)
 
 
 @router.get("/{category_id}")
-def get_category_details(category_id: int):
-    return {"message": f"Detalhes da categoria {category_id}"}
+def get_category_details(category_id: int, db: Session = Depends(get_db)):
+    return get_category_by_id_service(category_id, db)
 
 
 @router.post("/create")
-def register_category():
-    return {"message": "Categoria cadastrada com sucesso!"}
+def create_category(category: CategoryCreate, db: Session = Depends(get_db)):
+    return create_category_service(category, db)
 
 
 @router.put("/update/{category_id}")
-def update_category(category_id: int):
-    return {"message": f"Categoria {category_id} atualizada com sucesso!"}
+def update_category(
+    category_id: int, category: CategoryUpdate, db: Session = Depends(get_db)
+):
+    return update_category_service(category_id, category, db)
 
 
 @router.delete("/delete/{category_id}")
-def delete_category(category_id: int):
-    return {"message": f"Categoria {category_id} deletada com sucesso!"}
-
+def delete_category(category_id: int, db: Session = Depends(get_db)):
+    return delete_category_service(category_id, db)
