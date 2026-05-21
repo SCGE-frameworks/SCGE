@@ -1,5 +1,8 @@
-from fastapi import APIRouter
-
+from fastapi import APIRouter, Depends
+from requests import Session
+from database import get_db
+from services.role_services import role_create_service
+from schemas.role_schemas import RoleCreate
 router = APIRouter(prefix="/roles", tags=["Roles"])
 
 @router.get("/")
@@ -8,9 +11,8 @@ def list_roles():
 
 
 @router.post("/create")
-def create_role():
-    return {"message": "Cargo cadastrado com sucesso!"}
-
+def create_role(cargo: RoleCreate, db: Session = Depends(get_db)):
+    return role_create_service(cargo.nome, db)
 
 @router.put("/update/{role_id}")
 def update_role(role_id: int):

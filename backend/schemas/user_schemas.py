@@ -5,6 +5,7 @@ class UserCreate(BaseModel):
     nome: str = Field(min_length=3, max_length=255)
     email: EmailStr
     senha: str = Field(min_length=8)
+    cargo_id: int
  
 class UserUpdate(BaseModel):
     nome: Optional[str] = Field(min_length=3, max_length=255)
