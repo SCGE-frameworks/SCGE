@@ -1,30 +1,22 @@
+from pydantic import BaseModel, ConfigDict, Field
 from typing import Optional
 
-from pydantic import BaseModel
+
+class ProductCreate(BaseModel):
+    nome: str = Field(min_length=3, max_length=255)
+    descricao: Optional[str] = None
+    preco: float = Field(gt=0)
+    estoque: int = Field(ge=0)
+    # categoria_id: int  # reativar quando categorias estiverem implementadas
 
 
-class ProductBase(BaseModel):
-    name: str
-    description: Optional[str] = None
-    sku: str
-    price: float
-    stock: int
-
-
-class ProductCreate(ProductBase):
-    pass
-
-class ProductUpdate(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
-    sku: Optional[str] = None
-    price: Optional[float] = None
-    stock: Optional[int] = None
-
-
-class ProductResponse(ProductBase):
+class ProductResponse(BaseModel):
     id: int
-    is_active: bool
+    nome: str
+    descricao: Optional[str]
+    preco: float
+    estoque: int
+    # categoria_id: int  # reativar quando categorias estiverem implementadas
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
+

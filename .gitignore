@@ -45,3 +45,8 @@ Thumbs.db
 
 # Logs
 *.log
+
+# SQLite (dados locais; cada maquina gera o proprio .db)
+*.db
+*.sqlite
+*.sqlite3

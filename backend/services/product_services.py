@@ -1,44 +1,46 @@
-from fastapi import HTTPException
 from sqlalchemy.orm import Session
-
+from schemas.product_schemas import ProductCreate
 from models.product import Product
+from utils.responses import error_message, success_message
 
-def get_products(db: Session):
-    return db.query(Product).filter(Product.is_active == True).all()
+def create_product_service(product: ProductCreate, db: Session):
 
-
-def update_product(db: Session, product_id: int, data: dict):
-    product = db.query(Product).filter(Product.id == product_id).first()
-
-    if not product:
-        raise HTTPException(status_code=404, detail="Produto não encontrado")
-
-    if "sku" in data:
-        sku_exists = (
-            db.query(Product)
-            .filter(Product.sku == data["sku"], Product.id != product_id)
-            .first()
+    nome = product.nome
+    preco = product.preco
+    if not nome or not preco:
+        return error_message(
+            "nome e preco sao obrigatorios", code="MISSING_FIELDS", status_code=422
         )
 
-        if sku_exists:
-            raise HTTPException(status_code=400, detail="SKU já cadastrado")
+    # Validação de categoria — reativar quando categorias estiverem implementadas:
+    # from models.category import Category
+    # categoria_id = product.categoria_id
+    # category_existing = db.query(Category).filter(Category.id == categoria_id).first()
+    # if not category_existing:
+    #     return error_message(
+    #         "Categoria invalida", code="INVALID_CATEGORY", status_code=400
+    #     )
 
-    for field, value in data.items():
-        setattr(product, field, value)
+    new_product = Product(
+        nome=product.nome,
+        descricao=product.descricao,
+        preco=product.preco,
+        estoque=product.estoque,
+        # categoria_id=product.categoria_id,
+    )
 
+    db.add(new_product)
     db.commit()
-    db.refresh(product)
+    db.refresh(new_product)
 
-    return product
-
-def delete_product(db: Session, product_id: int):
-    product = db.query(Product).filter(Product.id == product_id).first()
-
-    if not product:
-        raise HTTPException(status_code=404, detail="Produto não encontrado")
-
-    product.is_active = False
-
-    db.commit()
-
-    return {"message": "Produto desativado com sucesso"}
+    return success_message(
+        "Produto cadastrado com sucesso",
+        {
+            "id": new_product.id,
+            "nome": new_product.nome,
+            "descricao": new_product.descricao,
+            "preco": new_product.preco,
+            "estoque": new_product.estoque,
+            # "categoria_id": new_product.categoria_id,
+        },
+    )
