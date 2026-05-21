@@ -1,16 +1,17 @@
-from sqlalchemy import Boolean, Column, Float, Integer, String
+from datetime import datetime, timezone
+from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Integer, String
 from database import Base
 
 
 class Product(Base):
-    __tablename__ = "products"
+    __tablename__ = "produtos"
 
     id = Column(Integer, primary_key=True, index=True)
-    nome = Column(String, nullable=False)
-    codigo = Column(String, nullable=False)
-    quantidade = Column(Float, nullable=False)
-    unid_medida = Column(String, nullable=False)  # Representando o Enum como String conforme a imagem
-    estoque_minimo = Column(Integer, nullable=False)
+    nome = Column(String, )
+    codigo = Column(String, )
+    quantidade = Column(Float, )
+    unid_medida = Column(String, )
+    estoque_minimo = Column(Integer, )
     ativo = Column(Boolean, default=True)
-    categoria_id = Column(Integer, nullable=False)
-    data_cadastro = Column(DateTime, default=datetime.utcnow)
+    categoria_id = Column(Integer, ForeignKey("categorias.id"))
+    data_cadastro = Column(DateTime, default=lambda: datetime.now(timezone.utc))
