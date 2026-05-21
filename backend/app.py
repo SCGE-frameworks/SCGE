@@ -24,5 +24,6 @@ app.include_router(products_router)
 
 Base.metadata.create_all(bind=engine)
 
+ 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)

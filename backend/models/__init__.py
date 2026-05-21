@@ -1,6 +1,6 @@
 from database import Base
 from .user import User
+from .category import Category
 from .product import Product
-# from .category import Category  # reativar quando categorias estiverem implementadas
 
-__all__ = ["User", "Product"]
+__all__ = ["User", "Category", "Product"]
