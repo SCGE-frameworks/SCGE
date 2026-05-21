@@ -6,3 +6,4 @@ from .product import Product
 
 __all__ = ["Cargo", "User", "Category", "Product"]
 
+
