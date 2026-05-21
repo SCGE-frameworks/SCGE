@@ -1,12 +1,16 @@
 import jwt
 from datetime import datetime, timedelta
 from passlib.context import CryptContext
+from fastapi import Depends
+from fastapi.security import HTTPBearer
+from utils.responses import error_message
 
 SECRET_KEY = "super-secret"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
 pwd_context = CryptContext(schemes=["bcrypt"])
+security = HTTPBearer()
 
 
 def hash_password(password: str):
@@ -37,3 +41,28 @@ def create_access_token(data: dict):
         SECRET_KEY,
         algorithm=ALGORITHM
     )
+
+def verify_token(token: str):
+    try:
+        payload = jwt.decode(
+            token,
+            SECRET_KEY,
+            algorithms=[ALGORITHM]
+        )
+        user_id: str = payload.get("sub")
+        
+        if user_id is None:
+            return error_message("Token inválido", code="INVALID_TOKEN", status_code=401)
+        return {"user_id": user_id}
+        
+    except jwt.ExpiredSignatureError:
+        return error_message("Token expirado", code="EXPIRED_TOKEN", status_code=401)
+    except jwt.InvalidTokenError:
+        return error_message("Token inválido", code="INVALID_TOKEN", status_code=401)
+ 
+    except jwt.InvalidTokenError:
+        return error_message("Token inválido", code="INVALID_TOKEN", status_code=401)
+
+def get_current_user(credentials: HTTPBearer = Depends(security)):
+    token = credentials.credentials
+    return verify_token(token)
