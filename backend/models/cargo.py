@@ -5,3 +5,4 @@ class Cargo(Base):
     __tablename__ = "cargos"
     id = Column(Integer, primary_key=True, autoincrement=True)
     nome = Column(String)
+    ativo = Column(Integer, default=1)
