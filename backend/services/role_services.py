@@ -50,5 +50,39 @@ def role_create_service(cargo_name: str, db: Session):
     db.add(new_cargo)
     db.commit()
     db.refresh(new_cargo)
+    return success_message("Cargo criado com sucesso", data={"id": new_cargo.id, "nome": new_cargo.nome, "ativo": new_cargo.ativo})
 
-    return success_message("Cargo criado com sucesso", data={"id": new_cargo.id, "nome": new_cargo.nome})
+def role_update_service(role_id: int, cargo_name: str, db: Session):
+    cargo = db.query(Cargo).filter(Cargo.id == role_id).first()
+    if not cargo:
+        return error_message("Cargo não encontrado", code="ROLE_NOT_FOUND", status_code=404)
+   
+    if not cargo_name:
+        return error_message("O nome do cargo é obrigatório", code="MISSING_FIELDS", status_code=422)
+
+    existing_cargo = db.query(Cargo).filter(Cargo.nome == cargo_name).first()
+    if existing_cargo:
+        return error_message("Cargo já existe", code="ROLE_ALREADY_EXISTS", status_code=400)
+
+    cargo.nome = cargo_name
+    cargo.ativo = True
+    db.commit()
+    db.refresh(cargo)
+
+    return success_message("Cargo atualizado com sucesso", data={"id": cargo.id, "nome": cargo.nome, "ativo": cargo.ativo})
+
+def role_delete_service(role_id: int, db: Session):
+    cargo = db.query(Cargo).filter(Cargo.id == role_id).first()
+    if not cargo:
+        return error_message("Cargo não encontrado", code="ROLE_NOT_FOUND", status_code=404)
+   
+    cargo.ativo = False
+    db.commit()
+    db.refresh(cargo)
+
+    return success_message("Cargo desativado com sucesso", data={"id": cargo.id, "nome": cargo.nome, "ativo": cargo.ativo})
+
+def role_list_service(db: Session):
+    cargos = db.query(Cargo).filter(Cargo.ativo == True).all()
+    cargos_data = [{"id": cargo.id, "nome": cargo.nome, "ativo": cargo.ativo} for cargo in cargos]
+    return success_message("Cargos listados com sucesso", data=cargos_data)
