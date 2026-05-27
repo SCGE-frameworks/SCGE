@@ -15,6 +15,9 @@ security = HTTPBearer()
 
 
 def hash_password(password: str):
+    if len(password.encode("utf-8")) > 72:
+        raise ValueError("Senha muito longa")
+
     return pwd_context.hash(password)
 
 def verify_password(
@@ -22,7 +25,7 @@ def verify_password(
     hashed_password: str
 ):
     return pwd_context.verify(
-        plain_password,
+        normalize_password(plain_password),
         hashed_password
     )
 

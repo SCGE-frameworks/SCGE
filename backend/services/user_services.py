@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from schemas.user_schemas import UserCreate, UserUpdate
 from models.user import User
+from models.role import Role
 from utils.responses import error_message, success_message
 from utils.auth import hash_password
 
@@ -14,7 +15,8 @@ def get_users_service(db: Session):
 
     for user in users:
         if user.ativo:
-            user_data.append({"id": user.id, "nome": user.nome, "email": user.email, "ativo": user.ativo})
+            user_cargo = db.query(Role).filter(Role.id == user.cargo_id).first()
+            user_data.append({"id": user.id, "nome": user.nome, "email": user.email, "ativo": user.ativo, "cargo_id": user_cargo.id, "cargo_nome": user_cargo.nome})
     
     return success_message("Usuários encontrados com sucesso", data={"users": user_data})
 
