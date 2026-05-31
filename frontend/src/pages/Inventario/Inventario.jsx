@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { AlertTriangle, Plus, Eye, Pencil, Trash2 } from 'lucide-react';
 import { Button, Card, Table } from '../../components/ui';
-import { listarItens, listarCategorias } from '../../services';
+import { atualizarItem, criarItem, deletarItem, listarItens, listarCategorias } from '../../services';
 import ModalProduto from './ModalProduto';
 
 const coresCategoria = {
@@ -16,9 +16,10 @@ function Inventario() {
   const [categoriaFiltro, setCategoriaFiltro] = useState('');
   const [statusFiltro, setStatusFiltro] = useState('');
   const [modalAberto, setModalAberto] = useState(false);
+  const [itemEditando, setItemEditando] = useState(null);
 
   useEffect(() => {
-    setItems(listarItens());
+    setItems([...listarItens()]);
     setCategorias(listarCategorias());
   }, []);
 
@@ -34,6 +35,37 @@ function Inventario() {
     if (statusFiltro && obterStatus(item) !== statusFiltro) return false;
     return true;
   });
+
+  function atualizarLista() {
+    setItems([...listarItens()]);
+  }
+
+  function abrirNovoProduto() {
+    setItemEditando(null);
+    setModalAberto(true);
+  }
+
+  function salvarProduto(produto) {
+    if (itemEditando) {
+      atualizarItem(itemEditando.id, produto);
+    } else {
+      criarItem(produto);
+    }
+
+    atualizarLista();
+  }
+
+  function ocultarProduto(item) {
+    atualizarItem(item.id, { hidden: !item.hidden });
+    atualizarLista();
+  }
+
+  function excluirProduto(id) {
+    if (confirm('Deseja excluir este produto?')) {
+      deletarItem(id);
+      atualizarLista();
+    }
+  }
 
   return (
     <section className="space-y-6">
@@ -75,7 +107,7 @@ function Inventario() {
           </select>
         </div>
 
-        <Button variant="primary" onClick={() => setModalAberto(true)} className="gap-2">
+        <Button variant="primary" onClick={abrirNovoProduto} className="gap-2">
           <Plus size={16} />
           Novo Produto
         </Button>
@@ -101,30 +133,32 @@ function Inventario() {
 
               return (
                 <tr key={item.id} className="border-b border-slate-100">
-                  <td className="py-3 px-4 text-sm text-slate-500 text-center">{item.sku}</td>
-                  <td className="py-3 px-4 text-sm font-medium text-slate-900 text-center">{item.name}</td>
+                  <td className="py-3 px-4 text-sm text-slate-500 text-center">{item.hidden ? 'Oculto' : item.sku}</td>
+                  <td className="py-3 px-4 text-sm font-medium text-slate-900 text-center">{item.hidden ? 'Oculto' : item.name}</td>
                   <td className="py-3 px-4 text-sm text-center">
-                    {categoria ? (
+                    {item.hidden ? 'Oculto' : categoria ? (
                       <span className={`inline-flex rounded-md px-2 py-1 text-xs font-medium uppercase ${coresCategoria[categoria.color]}`}>{categoria.name}</span>
                     ) : '-'}
                   </td>
-                  <td className="py-3 px-4 text-sm font-medium text-slate-900 text-center">{item.quantity} {item.unit}</td>
-                  <td className="py-3 px-4 text-sm text-slate-500 text-center">{item.min_quantity}</td>
+                  <td className="py-3 px-4 text-sm font-medium text-slate-900 text-center">{item.hidden ? 'Oculto' : `${item.quantity} ${item.unit}`}</td>
+                  <td className="py-3 px-4 text-sm text-slate-500 text-center">{item.hidden ? 'Oculto' : item.min_quantity}</td>
                   <td className="py-3 px-4 text-sm text-center">
-                    <span className="inline-flex items-center gap-2">
-                      <span className={`h-2 w-2 rounded-full ${status === 'Baixo' ? 'bg-red-500' : 'bg-green-500'}`} />
-                      <span className={status === 'Baixo' ? 'text-red-600 font-medium' : 'text-green-600 font-medium'}>{status}</span>
-                    </span>
+                    {item.hidden ? 'Oculto' : (
+                      <span className="inline-flex items-center gap-2">
+                        <span className={`h-2 w-2 rounded-full ${status === 'Baixo' ? 'bg-red-500' : 'bg-green-500'}`} />
+                        <span className={status === 'Baixo' ? 'text-red-600 font-medium' : 'text-green-600 font-medium'}>{status}</span>
+                      </span>
+                    )}
                   </td>
                   <td className="py-3 px-4 text-sm text-center">
                     <div className="flex items-center justify-center gap-3">
-                      <button type="button" onClick={() => console.log('Ver item', item.id)} className="text-slate-400 hover:text-brand-500">
+                      <button type="button" onClick={() => ocultarProduto(item)} className="text-slate-400 hover:text-brand-500">
                         <Eye size={18} />
                       </button>
-                      <button type="button" onClick={() => console.log('Editar item', item.id)} className="text-slate-400 hover:text-brand-500">
+                      <button type="button" onClick={() => { setItemEditando(item); setModalAberto(true); }} className="text-slate-400 hover:text-brand-500">
                         <Pencil size={18} />
                       </button>
-                      <button type="button" onClick={() => console.log('Excluir item', item.id)} className="text-slate-400 hover:text-red-500">
+                      <button type="button" onClick={() => excluirProduto(item.id)} className="text-slate-400 hover:text-red-500">
                         <Trash2 size={18} />
                       </button>
                     </div>
@@ -136,7 +170,7 @@ function Inventario() {
         </Table>
       </Card>
 
-      <ModalProduto isOpen={modalAberto} onClose={() => setModalAberto(false)} />
+      <ModalProduto isOpen={modalAberto} onClose={() => { setModalAberto(false); setItemEditando(null); }} categorias={categorias} item={itemEditando} onSalvar={salvarProduto} />
     </section>
   );
 }
