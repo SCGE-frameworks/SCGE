@@ -56,6 +56,12 @@ As rotas administrativas exigem usuário autenticado com `role` igual a `Adminis
 - `/admin/usuarios`
 - `/admin/perfis-acesso`
 
+## Protótipo no Figma
+
+As telas do frontend devem seguir o protótipo definido no Figma:
+
+- [Acessar protótipo no Figma](https://www.figma.com/design/axawXFROpTsEGqkq5cjCMz/Sistema-de-Estoque?node-id=3-180&t=IpvnkfOjhyjIpMe9-1)
+
 ## Usuários mockados para teste
 
 - `admin@scge.com`: Administrador
