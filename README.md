@@ -45,6 +45,14 @@ O projeto está em desenvolvimento.
 - GitHub
 - Figma
 
+## Design e Protótipo
+
+O protótipo das telas do SCGE foi desenvolvido no Figma e serve como referência visual para a implementação do frontend.
+
+- [Acessar protótipo no Figma](https://www.figma.com/design/axawXFROpTsEGqkq5cjCMz/Sistema-de-Estoque?node-id=3-180&t=IpvnkfOjhyjIpMe9-1)
+
+O protótipo contempla telas como login, recuperação de senha, dashboard, estoque/inventário, movimentações, relatórios, gestão de usuários e perfis de acesso.
+
 ## Estrutura do projeto
 
 ```text

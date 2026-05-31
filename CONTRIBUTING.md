@@ -80,7 +80,7 @@ Não inclua no commit arquivos locais, gerados automaticamente ou específicos d
 Depois de finalizar a tarefa, suba a branch para o repositório remoto:
 
 ```bash
-git push --set-upstream origin nome-da-branch
+git push origin nome-da-branch
 ```
 
 Ao abrir a Pull Request:
@@ -112,6 +112,7 @@ Ao trabalhar no frontend React + Vite:
 - Usar services para chamadas de API
 - Evitar `fetch` direto nas páginas quando já houver service
 - Manter consistência visual com componentes base
+- Antes de implementar ou alterar telas, consulte o protótipo no Figma indicado no README principal para manter consistência visual com o design aprovado
 - Rodar `npm run build` antes da PR
 
 ## Cuidados com backend
