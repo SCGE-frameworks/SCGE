@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 import { Button, Input } from '../../components/ui';
 import { criarItem, listarCategorias } from '../../services';
@@ -13,8 +13,24 @@ const produtoInicial = {
   location: '',
 };
 
-function ModalProduto({ isOpen, onClose, categorias }) {
+function ModalProduto({ isOpen, onClose, categorias, item, onSalvar }) {
   const [produto, setProduto] = useState(produtoInicial);
+
+  useEffect(() => {
+    if (item) {
+      setProduto({
+        sku: item.sku,
+        name: item.name,
+        category_id: item.category_id,
+        quantity: item.quantity,
+        min_quantity: item.min_quantity,
+        unit: item.unit,
+        location: item.location ?? '',
+      });
+    } else {
+      setProduto(produtoInicial);
+    }
+  }, [item, isOpen]);
 
   if (!isOpen) return null;
 
@@ -32,7 +48,7 @@ function ModalProduto({ isOpen, onClose, categorias }) {
   function salvarProduto(event) {
     event.preventDefault();
 
-    criarItem({
+    const produtoSalvo = {
       sku: produto.sku,
       name: produto.name,
       category_id: Number(produto.category_id),
@@ -40,11 +56,17 @@ function ModalProduto({ isOpen, onClose, categorias }) {
       min_quantity: Number(produto.min_quantity),
       unit: produto.unit,
       location: produto.location,
-      price: 0,
-      is_stagnant: false,
-    });
+      price: item?.price ?? 0,
+      is_stagnant: item?.is_stagnant ?? false,
+    };
 
-    alert('Produto cadastrado com sucesso!');
+    if (onSalvar) {
+      onSalvar(produtoSalvo);
+    } else {
+      criarItem(produtoSalvo);
+    }
+
+    alert(item ? 'Produto atualizado com sucesso!' : 'Produto cadastrado com sucesso!');
     fecharModal();
   }
 
@@ -54,7 +76,7 @@ function ModalProduto({ isOpen, onClose, categorias }) {
 
         <div className="flex items-start justify-between border-b border-slate-200 px-6 py-5">
           <div>
-            <h2 className="text-lg font-semibold text-slate-900">Novo Produto</h2>
+            <h2 className="text-lg font-semibold text-slate-900">{item ? 'Editar Produto' : 'Novo Produto'}</h2>
             <p className="mt-1 text-xs font-medium uppercase text-slate-500">Cadastro de produto</p>
           </div>
           <button type="button" onClick={fecharModal} className="text-slate-400 hover:text-slate-600">
