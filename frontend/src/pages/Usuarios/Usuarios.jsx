@@ -222,8 +222,7 @@ function UsuarioFormModal({
             value={form.cargo_id}
             onChange={onChange}
             error={errors.cargo_id}
-            disabled={isEdit}
-            required={!isEdit}
+            required
           >
             <option value="">Selecione um perfil</option>
             {cargos.map((cargo) => (
@@ -411,6 +410,7 @@ function Usuarios() {
 
     if (!editForm.nome.trim()) errors.nome = 'Informe o nome completo.';
     if (!editForm.email.trim()) errors.email = 'Informe o e-mail.';
+    if (!editForm.cargo_id) errors.cargo_id = 'Selecione um perfil.';
     if (editForm.senha && editForm.senha.length < 8) {
       errors.senha = 'A senha deve ter pelo menos 8 caracteres.';
     }
@@ -486,6 +486,7 @@ function Usuarios() {
     const payload = {
       nome: editForm.nome.trim(),
       email: editForm.email.trim(),
+      cargo_id: Number(editForm.cargo_id),
     };
 
     if (editForm.senha) {
