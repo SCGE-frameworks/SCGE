@@ -9,8 +9,9 @@ function AdminRoute() {
 
   try {
     const user = JSON.parse(storedUser);
+    const perfil = user?.cargo_nome || user?.role;
 
-    if (user?.role !== 'Administrador') {
+    if (perfil !== 'Administrador') {
       return <Navigate to="/dashboard" replace />;
     }
   } catch {

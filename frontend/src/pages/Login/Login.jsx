@@ -30,10 +30,11 @@ function Login() {
       return;
     }
 
-    const { id, name, role } = user;
+    const { id, name, role, cargo_id, cargo_nome } = user;
+    const perfil = cargo_nome || role;
     localStorage.setItem(
       'scge:user',
-      JSON.stringify({ id, name, email: user.email, role }),
+      JSON.stringify({ id, name, email: user.email, role: perfil, cargo_id, cargo_nome: perfil }),
     );
 
     setErrorMessage('');

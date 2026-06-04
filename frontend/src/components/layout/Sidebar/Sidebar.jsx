@@ -27,7 +27,9 @@ function Sidebar() {
 
   if (storedUser) {
     try {
-      isAdmin = JSON.parse(storedUser)?.role === 'Administrador';
+      const user = JSON.parse(storedUser);
+      const perfil = user?.cargo_nome || user?.role;
+      isAdmin = perfil === 'Administrador';
     } catch {
       isAdmin = false;
     }
