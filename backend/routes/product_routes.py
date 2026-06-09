@@ -3,19 +3,26 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from schemas.product_schemas import ProductCreate, ProductUpdate
-from services.product_services import create_product_service, delete_product_service, update_product_service
+from services.product_services import create_product_service, delete_product_service, update_product_service,list_products_service,get_product_by_id_service 
 
 router = APIRouter(prefix="/products", tags=["Products"])
 
 
+
+
 @router.get("/")
-def list_products():
-    return {"message": "Lista de produtos"}
+def get_all_products(
+    nome: str = None, 
+    codigo: str = None, 
+    categoria_id: int = None, 
+    db: Session = Depends(get_db)
+):
+    return list_products_service(db=db, nome=nome, codigo=codigo, categoria_id=categoria_id)
 
 
 @router.get("/{product_id}")
-def get_product(product_id: int):
-    return {"message": f"Detalhes do produto {product_id}"}
+def get_product_detail(id: int, db: Session = Depends(get_db)):
+    return get_product_by_id_service(product_id=id, db=db)
 
 
 @router.post("/create")
