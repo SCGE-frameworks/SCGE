@@ -17,7 +17,7 @@ function getStoredUser() {
 
     return {
       name: user?.name || fallbackUser.name,
-      role: user?.role || fallbackUser.role,
+      role: user?.cargo_nome || user?.role || fallbackUser.role,
     };
   } catch {
     return fallbackUser;

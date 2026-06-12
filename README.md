@@ -1,85 +1,178 @@
-# SCGE - Sistema de Controle e Gestao de Estoque
+# SCGE - Sistema de Controle e Gestão de Estoque
 
-O **SCGE** e uma aplicacao para registro, controle e acompanhamento de estoque, com foco em reduzir perdas operacionais, evitar rupturas e melhorar a visibilidade das movimentacoes.
+O **SCGE** é uma aplicação web para controle e acompanhamento de estoque. O sistema reúne funcionalidades para controle de usuários, perfis de acesso, produtos em estoque, movimentações e relatórios de apoio à gestão.
 
-## Objetivo do projeto
+O projeto é desenvolvido no contexto acadêmico do **IFMS**, como parte das atividades práticas de desenvolvimento de software.
 
-Centralizar o gerenciamento de inventario em uma solucao moderna, organizada e escalavel, substituindo processos manuais sujeitos a erro.
+## Objetivo
 
-## Status atual
+- Centralizar o gerenciamento de estoque em uma aplicação web.
+- Reduzir erros causados por processos manuais.
+- Melhorar a visibilidade sobre produtos, movimentações e usuários.
 
-Este repositorio contem o backend em **FastAPI** com rotas iniciais para:
+## Status do projeto
 
-- autenticacao (`/auth`)
-- usuarios (`/users`)
-- itens (`/items`)
+O projeto está em desenvolvimento.
 
-As rotas atuais estao em formato base (MVP inicial), com respostas de exemplo para evolucao incremental.
+- **Backend:** API desenvolvida com FastAPI.
+- **Frontend:** interface desenvolvida com React + Vite.
+- **Integração com API:** em andamento.
+- Algumas telas ainda utilizam mocks ou fluxos parciais enquanto o backend evolui.
 
 ## Tecnologias
+
+### Frontend
+
+- React
+- Vite
+- JavaScript
+- Tailwind CSS
+- React Router
+- Lucide React
 
 ### Backend
 
 - Python
 - FastAPI
-- Estrutura em camadas para evolucao de API REST
+- SQLAlchemy
+- Uvicorn
+- Pydantic
+- SQLite local, com possibilidade futura de PostgreSQL
 
-### Frontend (planejado)
+### Gestão
 
-- React
-- [Figma](https://www.figma.com/file/axawXFROpTsEGqkq5cjCMz?node-id=3:18&locale=pt-br&type=design)
+- Jira
+- GitHub
+- Figma
 
-### Banco de dados (planejado)
+## Design e Protótipo
 
-- PostgreSQL
+O protótipo das telas do SCGE foi desenvolvido no Figma e serve como referência visual para a implementação do frontend.
 
-### Gestao e processo
+- [Acessar protótipo no Figma](https://www.figma.com/design/axawXFROpTsEGqkq5cjCMz/Sistema-de-Estoque?node-id=3-180&t=IpvnkfOjhyjIpMe9-1)
 
-- Trello
-- Metodologia agil
+O protótipo contempla telas como login, recuperação de senha, dashboard, estoque/inventário, movimentações, relatórios, gestão de usuários e perfis de acesso.
 
-## Como executar localmente
+## Estrutura do projeto
 
-### 1) Pre-requisitos
-
-- Python 3.10+ recomendado
-- `pip`
-
-### 2) Criar ambiente virtual
-
-```bash
-python -m venv .venv
-source .venv/bin/activate
+```text
+SCGE/
+├── backend/
+├── frontend/
+├── README.md
+└── .gitignore
 ```
 
-### 3) Instalar dependencias
+- **backend:** API, models, routes, services, schemas e banco local.
+- **frontend:** interface React, páginas, components, layouts, services e rotas.
 
-> Se ainda nao existir `requirements.txt`, instale ao menos:
+## Como executar o backend localmente
 
-```bash
-pip install fastapi uvicorn
+No Windows, a partir da raiz do projeto:
+
+```powershell
+cd backend
+python -m venv ../.venv
+..\.venv\Scripts\activate
+pip install -r requirements.txt
+python -m uvicorn app:app --reload
 ```
 
-### 4) Iniciar servidor
-
-```bash
-uvicorn app:app --reload
-```
-
-API disponivel em:
+A API ficará disponível em:
 
 - `http://127.0.0.1:8000`
-- Documentacao Swagger: `http://127.0.0.1:8000/docs`
-- Documentacao ReDoc: `http://127.0.0.1:8000/redoc`
+- Swagger: `http://127.0.0.1:8000/docs`
+- ReDoc: `http://127.0.0.1:8000/redoc`
 
-## Funcionalidades previstas (MVP)
+Se necessário, copie `backend/.env.example` para `backend/.env` e ajuste as variáveis de ambiente locais.
 
-- Cadastro e gestao de usuarios (com perfil e permissao)
-- Cadastro e controle de itens em estoque
-- Registro de entradas e saidas
-- Alertas de estoque minimo
-- Relatorios para apoio a decisao
-- Filtros por nome, codigo e categoria
+## Como executar o frontend localmente
+
+A partir da raiz do projeto:
+
+```powershell
+cd frontend
+npm install
+npm run dev
+```
+
+O Vite normalmente executa a aplicação em:
+
+- `http://localhost:5173`
+- `http://127.0.0.1:5173`
+
+## Scripts úteis do frontend
+
+```bash
+npm run dev
+npm run build
+npm run lint
+npm run preview
+```
+
+## Fluxo de branches
+
+- `develop` é a branch principal de desenvolvimento.
+- `master` é usada como branch estável/final.
+- Novas tarefas devem sair da `develop`.
+- Pull requests devem ser abertos preferencialmente para `develop`.
+
+Exemplo:
+
+```bash
+git checkout develop
+git pull origin develop
+git checkout -b feat/front-XX-descricao-da-task
+```
+
+## Padrão de commits
+
+Exemplos:
+
+- `feat(front-XX): implementa tela de gestão de usuários`
+- `fix(front-XX): corrige comportamento da sidebar`
+- `docs(front-XX): atualiza documentação`
+- `refactor(front-XX): reorganiza services`
+
+## Funcionalidades atuais
+
+- Tela de login mockada.
+- Recuperação de senha visual/simulada.
+- Layout autenticado com Sidebar e Header.
+- Rotas protegidas.
+- Navegação administrativa por perfil.
+- Tela de Gestão de Usuários integrada à API.
+- Services reais para usuários e perfis/cargos.
+- Telas de Dashboard, Estoque/Inventário, Movimentações e Relatórios em evolução.
+
+## Rotas principais do frontend
+
+### Públicas
+
+- `/login`
+- `/forgot-password`
+- `/reset-password`
+
+### Internas
+
+- `/dashboard`
+- `/inventario`
+- `/movimentacoes`
+- `/relatorios`
+
+### Administrativas
+
+- `/admin/usuarios`
+- `/admin/perfis-acesso`
+
+## Observações importantes
+
+- Não commitar `.env`.
+- Não commitar `.venv`.
+- Não commitar `node_modules`.
+- Não commitar `dist`.
+- Não commitar banco local gerado para testes.
+- Algumas integrações dependem do backend estar rodando em `http://127.0.0.1:8000`.
 
 ## Equipe de desenvolvimento
 
@@ -87,8 +180,10 @@ API disponivel em:
 - Caio Victor Santos Valentim
 - Diogo Queiroz da Silva
 - Dirceu Alves Neto
+- Eduardo Melo Perucci
 - Fernando Tinno Venceslau
 - Gabriel Correa de A. Guanais
+- Hideki wakui
 - Hudson Batista Brandao
 - Inacio Ribeiro Azevedo
 - Joao Victor Carrenho Alves
@@ -96,4 +191,4 @@ API disponivel em:
 
 ---
 
-Tres Lagoas - MS | 2026
+Três Lagoas - MS | 2026

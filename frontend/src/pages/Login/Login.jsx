@@ -3,14 +3,15 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button, Card, Input } from '../../components/ui';
 import { PublicLayout } from '../../layouts';
-import { listarUsuarios } from '../../services';
+import { login as loginWithApi } from '../../services';
 
 function Login() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const email = String(formData.get('email')).trim().toLowerCase();
@@ -21,23 +22,21 @@ function Login() {
       return;
     }
 
-    const user = listarUsuarios().find(
-      (mockedUser) => mockedUser.email.toLowerCase() === email,
-    );
+    try {
+      setIsSubmitting(true);
+      setErrorMessage('');
 
-    if (!user) {
-      setErrorMessage('E-mail não encontrado. Verifique o endereço informado.');
-      return;
+      const { access_token, user } = await loginWithApi({ email, password });
+
+      localStorage.setItem('scge:token', access_token);
+      localStorage.setItem('scge:user', JSON.stringify(user));
+
+      navigate('/dashboard');
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : 'Não foi possível realizar o login.');
+    } finally {
+      setIsSubmitting(false);
     }
-
-    const { id, name, role } = user;
-    localStorage.setItem(
-      'scge:user',
-      JSON.stringify({ id, name, email: user.email, role }),
-    );
-
-    setErrorMessage('');
-    navigate('/dashboard');
   }
 
   return (
@@ -106,7 +105,7 @@ function Login() {
           )}
 
           <Button type="submit" size="lg" className="w-full">
-            Entrar no Sistema
+            {isSubmitting ? 'Entrando...' : 'Entrar no Sistema'}
           </Button>
         </form>
       </Card>
