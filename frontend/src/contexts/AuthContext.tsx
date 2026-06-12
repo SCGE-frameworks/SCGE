@@ -6,7 +6,7 @@ import {
   ReactNode,
 } from 'react'
 
-import { apiRequest } from '../services/api'
+import { login as loginWithApi } from '../services'
 
 interface User {
   id: string
@@ -48,10 +48,10 @@ export function AuthProvider({
 
   useEffect(() => {
     const storedToken =
-      localStorage.getItem('token')
+      localStorage.getItem('scge:token')
 
     const storedUser =
-      localStorage.getItem('user')
+      localStorage.getItem('scge:user')
 
     if (storedToken && storedUser) {
       setToken(storedToken)
@@ -65,30 +65,23 @@ export function AuthProvider({
     email: string,
     password: string
   ) {
-    const response = await apiRequest(
-      '/auth/login',
-      {
-        method: 'POST',
+    const response = await loginWithApi({
+      email,
+      password,
+    })
 
-        body: JSON.stringify({
-          email,
-          password,
-        }),
-      }
-    )
-
-    const { user, token } = response
+    const { user, access_token } = response
 
     setUser(user)
-    setToken(token)
+    setToken(access_token)
 
     localStorage.setItem(
-      'token',
-      token
+      'scge:token',
+      access_token
     )
 
     localStorage.setItem(
-      'user',
+      'scge:user',
       JSON.stringify(user)
     )
   }
@@ -97,9 +90,9 @@ export function AuthProvider({
     setUser(null)
     setToken(null)
 
-    localStorage.removeItem('token')
+    localStorage.removeItem('scge:token')
 
-    localStorage.removeItem('user')
+    localStorage.removeItem('scge:user')
   }
 
   return (
