@@ -1,13 +1,12 @@
-import { listarUsuarios } from '../users';
+import { apiRequest } from '../api';
 
-export const login = ({ email, password }) => {
-  if (password !== '123456') return null;
-
-  const user = listarUsuarios().find((u) => u.email === email);
-  if (!user) return null;
-
-  return {
-    access_token: 'mock.jwt.token',
-    user,
-  };
-};
+export async function login({ email, password }) {
+  return apiRequest('/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({
+      email,
+      password,
+      senha: password,
+    }),
+  });
+}
