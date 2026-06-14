@@ -3,14 +3,14 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button, Card, Input } from '../../components/ui';
 import { PublicLayout } from '../../layouts';
-import { listarUsuarios } from '../../services';
+import { login as authenticate } from '../../services';
 
 function Login() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const email = String(formData.get('email')).trim().toLowerCase();
@@ -21,24 +21,35 @@ function Login() {
       return;
     }
 
-    const user = listarUsuarios().find(
-      (mockedUser) => mockedUser.email.toLowerCase() === email,
-    );
+    try {
+      const response = await authenticate({ email, password });
+      const user = response?.data?.user ?? response?.user ?? response?.data ?? null;
 
-    if (!user) {
-      setErrorMessage('E-mail não encontrado. Verifique o endereço informado.');
-      return;
+      if (!user) {
+        setErrorMessage('Não foi possível autenticar o usuário.');
+        return;
+      }
+
+      const name = user.name ?? user.nome ?? 'Usuário';
+      const role = user.role ?? user.cargo_nome ?? 'Usuário';
+
+      localStorage.setItem(
+        'scge:user',
+        JSON.stringify({
+          id: user.id,
+          name,
+          email: user.email,
+          role,
+          cargo_id: user.cargo_id,
+          cargo_nome: user.cargo_nome ?? role,
+        }),
+      );
+
+      setErrorMessage('');
+      navigate('/dashboard');
+    } catch (error) {
+      setErrorMessage(error.message || 'Falha ao realizar login.');
     }
-
-    const { id, name, role, cargo_id, cargo_nome } = user;
-    const perfil = cargo_nome || role;
-    localStorage.setItem(
-      'scge:user',
-      JSON.stringify({ id, name, email: user.email, role: perfil, cargo_id, cargo_nome: perfil }),
-    );
-
-    setErrorMessage('');
-    navigate('/dashboard');
   }
 
   return (
