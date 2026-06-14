@@ -25,7 +25,7 @@ def verify_password(
     hashed_password: str
 ):
     return pwd_context.verify(
-        normalize_password(plain_password),
+        plain_password,
         hashed_password
     )
 
