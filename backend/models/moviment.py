@@ -1,16 +1,21 @@
-from sqlalchemy import Column, Integer, Float, String, ForeignKey, DateTime, Enum
+import enum
+
+from sqlalchemy import Column, DateTime, Enum as SqlEnum, Float, ForeignKey, Integer, String
+
 from database import Base
 
-class MovimentType(Enum):
+
+class MovimentType(str, enum.Enum):
     ENTRADA = "entrada"
     SAIDA = "saida"
     PERDA = "perda"
+
 
 class Moviment(Base):
     __tablename__ = "movimentacao_estoque"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    tipo = Column(Enum(MovimentType), nullable=False)
+    tipo = Column(SqlEnum(MovimentType), nullable=False)
     quantidade = Column(Float, nullable=False)
     data_movimentacao = Column(DateTime, nullable=False)
     observacao = Column(String, nullable=True)

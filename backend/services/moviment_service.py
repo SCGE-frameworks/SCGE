@@ -1,14 +1,16 @@
 from datetime import datetime, timezone
+
 from sqlalchemy.orm import Session
-from schemas.moviment_schemas import MovimentCreate
-from models import Moviment, Product
-from utils.responses import error_message, success_message
+
+from models import Moviment, MovimentType, Product
+from schemas import MovimentCreate
+from utils import error_message, success_message
 
 def list_movements_service(db: Session):
     movements = db.query(Moviment).all()
     if not movements:
         return error_message("Nenhuma movimentação encontrada", code="NO_MOVEMENTS_FOUND", status_code=404)
-        
+
     return success_message("Movimentações encontradas", data=movements)
 
 def get_movement_by_id_service(movement_id: int, db: Session):
@@ -20,7 +22,10 @@ def get_movement_by_id_service(movement_id: int, db: Session):
 
 def create_entry_service(entry: MovimentCreate, db: Session):
 
-    product = db.query(Product).filter(Product.id == entry.product_id).first()
+    if entry.tipo != MovimentType.ENTRADA:
+        return error_message("Tipo de movimentação inválido", code="INVALID_MOVEMENT_TYPE", status_code=400)
+
+    product = db.query(Product).filter(Product.id == entry.produto_id).first()
     if not product:
         return error_message("Produto não encontrado", code="PRODUCT_NOT_FOUND", status_code=404)
 
@@ -58,6 +63,9 @@ def create_entry_service(entry: MovimentCreate, db: Session):
 
 def create_exit_service(exit: MovimentCreate, db: Session):
     
+    if exit.tipo != MovimentType.SAIDA:
+        return error_message("Tipo de movimentação inválido", code="INVALID_MOVEMENT_TYPE", status_code=400)
+
     product = db.query(Product).filter(Product.id == exit.produto_id).first()
     if not product:
         return error_message("Produto não encontrado", code="PRODUCT_NOT_FOUND", status_code=404)
@@ -100,10 +108,16 @@ def create_exit_service(exit: MovimentCreate, db: Session):
 
 def create_loss_service(loss: MovimentCreate, db: Session):
     
+    if loss.tipo != MovimentType.PERDA:
+        return error_message("Tipo de movimentação inválido", code="INVALID_MOVEMENT_TYPE", status_code=400)
+
     product = db.query(Product).filter(Product.id == loss.produto_id).first()
     if not product:
         return error_message("Produto não encontrado", code="PRODUCT_NOT_FOUND", status_code=404)
     
+    if loss.quantidade > product.quantidade:
+        return error_message("Quantidade insuficiente em estoque", code="INSUFFICIENT_STOCK", status_code=400)
+
     new_moviment = Moviment(
         tipo = loss.tipo,
         quantidade = loss.quantidade,

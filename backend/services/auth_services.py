@@ -1,14 +1,13 @@
-from fastapi import HTTPException
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
-from models.user import User
-from models.role import Role
-from schemas.auth_schema import AuthRequest
 
-from utils.responses import error_message, success_message
-from utils.auth import (
+from models import Role, User
+from schemas import AuthRequest
+from utils import (
+    create_access_token,
+    error_message,
+    success_message,
     verify_password,
-    create_access_token
 )
 
 def auth_login(login_data: AuthRequest, db: Session):

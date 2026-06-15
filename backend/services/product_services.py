@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Session
-from models.category import Category
-from schemas.product_schemas import ProductCreate, ProductUpdate
-from models.product import Product
-from utils.responses import error_message, success_message
+
+from models import Category, Product
+from schemas import ProductCreate, ProductUpdate
+from utils import error_message, success_message
 
 def create_product_service(product: ProductCreate, db: Session):
     category_existing = (

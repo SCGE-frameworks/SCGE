@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from passlib.context import CryptContext
 from fastapi import Depends
 from fastapi.security import HTTPBearer
-from utils.responses import error_message
+from .responses import error_message
 
 SECRET_KEY = os.getenv("SECRET_KEY", "your_secret_key")  
 ALGORITHM = "HS256"

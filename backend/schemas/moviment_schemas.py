@@ -1,8 +1,7 @@
 from pydantic import BaseModel, Field
 from typing import Optional
 
-from models.moviment import MovimentType 
-
+from models import MovimentType
 class MovimentCreate(BaseModel):
     tipo: MovimentType
     quantidade: float = Field(gt=0)
