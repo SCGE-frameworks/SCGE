@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, Field
 from typing import Optional
 
 
@@ -10,11 +10,3 @@ class CategoryCreate(BaseModel):
 class CategoryUpdate(BaseModel):
     nome: Optional[str] = Field(default=None, min_length=3, max_length=255)
     descricao: Optional[str] = Field(default=None, min_length=3, max_length=255)
-
-
-class CategoryResponse(BaseModel):
-    id: int
-    nome: str
-    descricao: str
-    ativo: bool
-    model_config = ConfigDict(from_attributes=True)
