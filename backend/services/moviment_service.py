@@ -4,6 +4,20 @@ from schemas.moviment_schemas import MovimentCreate
 from models import Moviment, Product
 from utils.responses import error_message, success_message
 
+def list_movements_service(db: Session):
+    movements = db.query(Moviment).all()
+    if not movements:
+        return error_message("Nenhuma movimentação encontrada", code="NO_MOVEMENTS_FOUND", status_code=404)
+        
+    return success_message("Movimentações encontradas", data=movements)
+
+def get_movement_by_id_service(movement_id: int, db: Session):
+    movement = db.query(Moviment).filter(Moviment.id == movement_id).first()
+    if not movement:
+        return error_message("Movimentação não encontrada", code="MOVEMENT_NOT_FOUND", status_code=404)
+
+    return success_message("Movimentação encontrada", data=movement)
+
 def create_entry_service(entry: MovimentCreate, db: Session):
 
     product = db.query(Product).filter(Product.id == entry.product_id).first()
