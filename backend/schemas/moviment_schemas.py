@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 from typing import Optional
 
-from models.moviment import MovimentType  # ideal: enum em schemas ou constants
+from models.moviment import MovimentType 
 
 class MovimentCreate(BaseModel):
     tipo: MovimentType

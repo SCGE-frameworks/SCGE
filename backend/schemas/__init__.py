@@ -14,5 +14,5 @@ __all__ = [
     "RoleCreate",
     "CategoryCreate",
     "CategoryUpdate",
-    "AuthRequest"
+    "AuthRequest",
 ]

@@ -3,8 +3,8 @@ from .role import Role
 from .user import User
 from .category import Category
 from .product import Product
-from .stock_moviment import Stock_Moviment
+from .moviment import Moviment
 
-__all__ = ["Role", "User", "Category", "Product", "Stock_Moviment"]
+__all__ = ["Role", "User", "Category", "Product", "Moviment"]
 
 

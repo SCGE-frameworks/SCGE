@@ -11,7 +11,7 @@ class Moviment(Base):
     __tablename__ = "movimentacao_estoque"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    tipo = Column(Enum(TipoMovimentacao), nullable=False)
+    tipo = Column(Enum(MovimentType), nullable=False)
     quantidade = Column(Float, nullable=False)
     data_movimentacao = Column(DateTime, nullable=False)
     observacao = Column(String, nullable=True)
