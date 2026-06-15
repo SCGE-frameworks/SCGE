@@ -5,7 +5,6 @@ class MovimentType(Enum):
     ENTRADA = "entrada"
     SAIDA = "saida"
     PERDA = "perda"
-    AJUSTE = "ajuste"
 
 class Moviment(Base):
     __tablename__ = "movimentacao_estoque"

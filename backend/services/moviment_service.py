@@ -21,13 +21,25 @@ def create_entry_service(entry: MovimentCreate, db: Session):
 
     product.quantidade += entry.quantidade
 
-    db.add(new_entry, product)
-    db.commit()
-    db.refresh(new_entry, product)
-
+    try:
+        db.add(new_entry)          # só o objeto novo
+        db.commit()
+        db.refresh(new_entry)
+        db.refresh(product)
+    except Exception:
+        db.rollback()
+        return error_message(
+            "Erro ao registrar entrada",
+            code="MOVEMENT_CREATE_FAILED",
+            status_code=500,
+        )
     return success_message(
         "Entrada registrada com sucesso",
-         data={"moviment": new_entry, "product": product}
+        data={
+            "moviment_id": new_entry.id,
+            "produto_id": product.id,
+            "quantidade_atual": product.quantidade,
+        },
     )
 
 def create_exit_service(exit: MovimentCreate, db: Session):
@@ -50,12 +62,25 @@ def create_exit_service(exit: MovimentCreate, db: Session):
 
     product.quantidade -= exit.quantidade
 
-    db.add(product, new_moviment)
-    db.commit()
-    db.refresh(product, new_moviment)
+    try:
+        db.add(new_moviment)
+        db.commit()
+        db.refresh(new_moviment)
+        db.refresh(product)
+    except:
+        db.rollback()
+        return error_message(
+            "Erro ao registrar saída",
+            code="MOVEMENT_CREATE_FAILED",
+            status_code=500,
+        )
 
     return success_message(
         "Saída registrada com sucesso",
-         data={"moviment": new_moviment, "product": product}
+        data={
+            "moviment_id": new_moviment.id,
+            "produto_id": product.id,
+            "quantidade_atual": product.quantidade,
+        },
     )
 
