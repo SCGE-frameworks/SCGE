@@ -1,13 +1,13 @@
 from sqlalchemy import Column, Integer, Float, String, ForeignKey, DateTime, Enum
 from database import Base
 
-class TipoMovimentacao(Enum):
+class MovimentType(Enum):
     ENTRADA = "saida"
     SAIDA = "entrada"
     PERDA = "perda"
     AJUSTE = "ajuste"
 
-class Stock_Moviment(Base):
+class Moviment(Base):
     __tablename__ = "movimentacao_estoque"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
