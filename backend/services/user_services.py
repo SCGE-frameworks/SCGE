@@ -1,9 +1,8 @@
 from sqlalchemy.orm import Session
-from schemas.user_schemas import UserCreate, UserUpdate
-from models.user import User
-from models.role import Role
-from utils.responses import error_message, success_message
-from utils.auth import hash_password
+
+from models import Role, User
+from schemas import UserCreate, UserUpdate
+from utils import error_message, hash_password, success_message
 
 def get_users_service(db: Session):
     

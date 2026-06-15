@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from database import get_db
-from schemas.category_schemas import CategoryCreate, CategoryUpdate
-from services.category_services import (
+from schemas import CategoryCreate, CategoryUpdate
+from services import (
     create_category_service,
     delete_category_service,
     get_category_by_id_service,

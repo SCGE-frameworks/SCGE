@@ -1,11 +1,10 @@
 from fastapi import Depends
 from sqlalchemy.orm import Session
+
 from database import get_db
-from models.user import User
-from models.role import Role
-from schemas.role_schemas import RoleCreate
-from utils.responses import error_message, success_message
-from utils.auth import get_current_user
+from models import Role, User
+from schemas import RoleCreate
+from utils import error_message, get_current_user, success_message
 
 
 def require_role(role_name: str = None):

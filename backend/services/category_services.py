@@ -1,7 +1,8 @@
 from sqlalchemy.orm import Session
-from schemas.category_schemas import CategoryCreate, CategoryUpdate
-from models.category import Category
-from utils.responses import error_message, success_message
+
+from models import Category
+from schemas import CategoryCreate, CategoryUpdate
+from utils import error_message, success_message
 
 
 def create_category_service(category: CategoryCreate, db: Session):
