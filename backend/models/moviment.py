@@ -2,8 +2,8 @@ from sqlalchemy import Column, Integer, Float, String, ForeignKey, DateTime, Enu
 from database import Base
 
 class MovimentType(Enum):
-    ENTRADA = "saida"
-    SAIDA = "entrada"
+    ENTRADA = "entrada"
+    SAIDA = "saida"
     PERDA = "perda"
     AJUSTE = "ajuste"
 

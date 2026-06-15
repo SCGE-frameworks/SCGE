@@ -1,4 +1,9 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+
+from backend.services.moviment_service import create_entry_service
+from database import get_db
+from schemas import MovimentCreate
 
 router = APIRouter(prefix="/movements", tags=["Stocks Movements"])
 
@@ -7,8 +12,8 @@ def list_movements():
     return {"message": "Lista de movimentações de estoque"}
 
 @router.post("/create_entry")
-def register_entry():
-    return {"message": "Entrada de estoque cadastrada com sucesso!"}
+def create_entry(entry: MovimentCreate, db: Session = Depends(get_db)):
+    return create_entry_service(entry, db)
 
 @router.post("/create_exit")
 def register_exit():
