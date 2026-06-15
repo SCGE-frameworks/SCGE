@@ -6,19 +6,30 @@ from models import Moviment, MovimentType, Product
 from schemas import MovimentCreate
 from utils import error_message, success_message
 
+def _serialize_movement(movement: Moviment):
+    return {
+        "id": movement.id,
+        "tipo": movement.tipo.value,
+        "quantidade": movement.quantidade,
+        "data_movimentacao": movement.data_movimentacao,
+        "observacao": movement.observacao,
+        "produto_id": movement.produto_id,
+        "usuario_id": movement.usuario_id,
+    }
+
 def list_movements_service(db: Session):
     movements = db.query(Moviment).all()
     if not movements:
         return error_message("Nenhuma movimentação encontrada", code="NO_MOVEMENTS_FOUND", status_code=404)
 
-    return success_message("Movimentações encontradas", data=movements)
+    return success_message("Movimentações encontradas", data={"movements": [_serialize_movement(m) for m in movements]})
 
 def get_movement_by_id_service(movement_id: int, db: Session):
     movement = db.query(Moviment).filter(Moviment.id == movement_id).first()
     if not movement:
         return error_message("Movimentação não encontrada", code="MOVEMENT_NOT_FOUND", status_code=404)
 
-    return success_message("Movimentação encontrada", data=movement)
+    return success_message("Movimentação encontrada", data={"movement": _serialize_movement(movement)})
 
 def create_entry_service(entry: MovimentCreate, db: Session):
 
@@ -28,6 +39,9 @@ def create_entry_service(entry: MovimentCreate, db: Session):
     product = db.query(Product).filter(Product.id == entry.produto_id).first()
     if not product:
         return error_message("Produto não encontrado", code="PRODUCT_NOT_FOUND", status_code=404)
+
+    if not product.ativo:
+        return error_message("Produto inativo", code="PRODUCT_INACTIVE", status_code=400)
 
     new_entry = Moviment(
         tipo = entry.tipo,
