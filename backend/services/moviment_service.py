@@ -84,3 +84,41 @@ def create_exit_service(exit: MovimentCreate, db: Session):
         },
     )
 
+def create_loss_service(loss: MovimentCreate, db: Session):
+    
+    product = db.query(Product).filter(Product.id == loss.produto_id).first()
+    if not product:
+        return error_message("Produto não encontrado", code="PRODUCT_NOT_FOUND", status_code=404)
+    
+    new_moviment = Moviment(
+        tipo = loss.tipo,
+        quantidade = loss.quantidade,
+        data_movimentacao = datetime.now(timezone.utc),
+        observacao = loss.observacao,
+        produto_id = product.id
+        # usuario_id = (pegar pelo get_current_user)
+    )
+
+    product.quantidade -= loss.quantidade
+
+    try:
+        db.add(new_moviment)
+        db.commit()
+        db.refresh(new_moviment)
+        db.refresh(product)
+    except:
+        db.rollback()
+        return error_message(
+            "Erro ao registrar perda",
+            code="MOVEMENT_CREATE_FAILED",
+            status_code=500,
+        )
+
+    return success_message(
+        "Perda registrada com sucesso",
+        data={
+            "moviment_id": new_moviment.id,
+            "produto_id": product.id,
+            "quantidade_atual": product.quantidade,
+        },
+    )
