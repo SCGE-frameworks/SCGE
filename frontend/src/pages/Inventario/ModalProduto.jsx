@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 import { Button, Input } from '../../components/ui';
-import { criarItem, listarCategorias } from '../../services';
 
 const produtoInicial = {
   sku: '',
@@ -34,7 +33,7 @@ function ModalProduto({ isOpen, onClose, categorias, item, onSalvar }) {
 
   if (!isOpen) return null;
 
-  const listaCategorias = categorias?.length ? categorias : listarCategorias();
+  const listaCategorias = categorias ?? [];
 
   function alterarCampo(event) {
     setProduto({ ...produto, [event.target.name]: event.target.value });
@@ -45,7 +44,7 @@ function ModalProduto({ isOpen, onClose, categorias, item, onSalvar }) {
     onClose();
   }
 
-  function salvarProduto(event) {
+  async function salvarProduto(event) {
     event.preventDefault();
 
     const produtoSalvo = {
@@ -60,14 +59,16 @@ function ModalProduto({ isOpen, onClose, categorias, item, onSalvar }) {
       is_stagnant: item?.is_stagnant ?? false,
     };
 
-    if (onSalvar) {
-      onSalvar(produtoSalvo);
-    } else {
-      criarItem(produtoSalvo);
-    }
+    try {
+      if (onSalvar) {
+        await onSalvar(produtoSalvo);
+      }
 
-    alert(item ? 'Produto atualizado com sucesso!' : 'Produto cadastrado com sucesso!');
-    fecharModal();
+      alert(item ? 'Produto atualizado com sucesso!' : 'Produto cadastrado com sucesso!');
+      fecharModal();
+    } catch (error) {
+      alert(error?.message || 'Não foi possível salvar o produto.');
+    }
   }
 
   return (

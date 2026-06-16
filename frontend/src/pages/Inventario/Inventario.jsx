@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { AlertTriangle, Plus, Eye, Pencil, Trash2 } from 'lucide-react';
+import { AlertTriangle, Plus, Pencil, Trash2 } from 'lucide-react';
 import { Button, Card, Table } from '../../components/ui';
-import { atualizarItem, criarItem, deletarItem, listarItens, listarCategorias } from '../../services';
+import { atualizarProdutoApi, criarProdutoApi, deletarProdutoApi, listarCategoriasApi, listarProdutosApi } from '../../services';
 import ModalProduto from './ModalProduto';
 
 const coresCategoria = {
@@ -17,18 +17,19 @@ function Inventario() {
   const [statusFiltro, setStatusFiltro] = useState('');
   const [modalAberto, setModalAberto] = useState(false);
   const [itemEditando, setItemEditando] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
-    setItems([...listarItens()]);
-    setCategorias(listarCategorias());
+    carregarDados();
   }, []);
 
   const totalItens = items.length;
-  const estoqueBaixo = items.filter((i) => i.quantity < i.min_quantity).length;
+  const estoqueBaixo = items.filter((i) => i.quantity <= i.min_quantity).length;
 
-  const buscarCategoria = (categoryId) => categorias.find((c) => c.id === categoryId);
+  const buscarCategoria = (categoryId) => categorias.find((c) => String(c.id) === String(categoryId));
 
-  const obterStatus = (item) => item.quantity < item.min_quantity ? 'Baixo' : 'Suficiente';
+  const obterStatus = (item) => item.quantity <= item.min_quantity ? 'Baixo' : 'Suficiente';
 
   const itensFiltrados = items.filter((item) => {
     if (categoriaFiltro && item.category_id !== Number(categoriaFiltro)) return false;
@@ -36,8 +37,23 @@ function Inventario() {
     return true;
   });
 
-  function atualizarLista() {
-    setItems([...listarItens()]);
+  async function carregarDados() {
+    setLoading(true);
+    setErrorMessage('');
+
+    try {
+      const [produtosResponse, categoriasResponse] = await Promise.all([
+        listarProdutosApi(),
+        listarCategoriasApi(),
+      ]);
+
+      setItems(produtosResponse);
+      setCategorias(categoriasResponse);
+    } catch (error) {
+      setErrorMessage(error?.message || 'Não foi possível carregar o inventário.');
+    } finally {
+      setLoading(false);
+    }
   }
 
   function abrirNovoProduto() {
@@ -45,25 +61,24 @@ function Inventario() {
     setModalAberto(true);
   }
 
-  function salvarProduto(produto) {
+  async function salvarProduto(produto) {
     if (itemEditando) {
-      atualizarItem(itemEditando.id, produto);
+      await atualizarProdutoApi(itemEditando.id, produto);
     } else {
-      criarItem(produto);
+      await criarProdutoApi(produto);
     }
 
-    atualizarLista();
+    await carregarDados();
   }
 
-  function ocultarProduto(item) {
-    atualizarItem(item.id, { hidden: !item.hidden });
-    atualizarLista();
-  }
-
-  function excluirProduto(id) {
+  async function excluirProduto(id) {
     if (confirm('Deseja excluir este produto?')) {
-      deletarItem(id);
-      atualizarLista();
+      try {
+        await deletarProdutoApi(id);
+        await carregarDados();
+      } catch (error) {
+        setErrorMessage(error?.message || 'Não foi possível excluir o produto.');
+      }
     }
   }
 
@@ -113,6 +128,12 @@ function Inventario() {
         </Button>
       </div>
 
+      {errorMessage && (
+        <div role="alert" className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {errorMessage}
+        </div>
+      )}
+
       <Card>
         <Table>
           <thead>
@@ -127,34 +148,41 @@ function Inventario() {
             </tr>
           </thead>
           <tbody>
-            {itensFiltrados.map((item) => {
+            {loading ? (
+              <tr>
+                <td colSpan={7} className="px-6 py-8 text-center text-sm text-slate-500">
+                  Carregando inventário...
+                </td>
+              </tr>
+            ) : itensFiltrados.length === 0 ? (
+              <tr>
+                <td colSpan={7} className="px-6 py-8 text-center text-sm text-slate-500">
+                  Nenhum produto encontrado.
+                </td>
+              </tr>
+            ) : itensFiltrados.map((item) => {
               const categoria = buscarCategoria(item.category_id);
               const status = obterStatus(item);
 
               return (
                 <tr key={item.id} className="border-b border-slate-100">
-                  <td className="py-3 px-4 text-sm text-slate-500 text-center">{item.hidden ? 'Oculto' : item.sku}</td>
-                  <td className="py-3 px-4 text-sm font-medium text-slate-900 text-center">{item.hidden ? 'Oculto' : item.name}</td>
+                  <td className="py-3 px-4 text-sm text-slate-500 text-center">{item.sku}</td>
+                  <td className="py-3 px-4 text-sm font-medium text-slate-900 text-center">{item.name}</td>
                   <td className="py-3 px-4 text-sm text-center">
-                    {item.hidden ? 'Oculto' : categoria ? (
+                    {categoria ? (
                       <span className={`inline-flex rounded-md px-2 py-1 text-xs font-medium uppercase ${coresCategoria[categoria.color]}`}>{categoria.name}</span>
                     ) : '-'}
                   </td>
-                  <td className="py-3 px-4 text-sm font-medium text-slate-900 text-center">{item.hidden ? 'Oculto' : `${item.quantity} ${item.unit}`}</td>
-                  <td className="py-3 px-4 text-sm text-slate-500 text-center">{item.hidden ? 'Oculto' : item.min_quantity}</td>
+                  <td className="py-3 px-4 text-sm font-medium text-slate-900 text-center">{`${item.quantity} ${item.unit}`}</td>
+                  <td className="py-3 px-4 text-sm text-slate-500 text-center">{item.min_quantity}</td>
                   <td className="py-3 px-4 text-sm text-center">
-                    {item.hidden ? 'Oculto' : (
-                      <span className="inline-flex items-center gap-2">
-                        <span className={`h-2 w-2 rounded-full ${status === 'Baixo' ? 'bg-red-500' : 'bg-green-500'}`} />
-                        <span className={status === 'Baixo' ? 'text-red-600 font-medium' : 'text-green-600 font-medium'}>{status}</span>
-                      </span>
-                    )}
+                    <span className="inline-flex items-center gap-2">
+                      <span className={`h-2 w-2 rounded-full ${status === 'Baixo' ? 'bg-red-500' : 'bg-green-500'}`} />
+                      <span className={status === 'Baixo' ? 'text-red-600 font-medium' : 'text-green-600 font-medium'}>{status}</span>
+                    </span>
                   </td>
                   <td className="py-3 px-4 text-sm text-center">
                     <div className="flex items-center justify-center gap-3">
-                      <button type="button" onClick={() => ocultarProduto(item)} className="text-slate-400 hover:text-brand-500">
-                        <Eye size={18} />
-                      </button>
                       <button type="button" onClick={() => { setItemEditando(item); setModalAberto(true); }} className="text-slate-400 hover:text-brand-500">
                         <Pencil size={18} />
                       </button>
