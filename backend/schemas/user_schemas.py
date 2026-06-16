@@ -1,13 +1,17 @@
 from typing import Optional
+
 from pydantic import BaseModel, EmailStr, Field
 
+
 class UserCreate(BaseModel):
-    nome: str = Field(min_length=3, max_length=255)
+    name: str = Field(min_length=3, max_length=255)
     email: EmailStr
-    senha: str = Field(min_length=8, max_length=72)
-    cargo_id: int
- 
+    password: str = Field(min_length=8, max_length=72)
+    role_id: int = Field(gt=0)
+
+
 class UserUpdate(BaseModel):
-    nome: Optional[str] = Field(min_length=3, max_length=255)
-    email: Optional[EmailStr]
-    senha: Optional[str] = Field(min_length=8, max_length=72)
+    name: Optional[str] = Field(default=None, min_length=3, max_length=255)
+    email: Optional[EmailStr] = None
+    password: Optional[str] = Field(default=None, min_length=8, max_length=72)
+    role_id: Optional[int] = Field(default=None, gt=0)

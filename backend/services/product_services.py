@@ -1,208 +1,113 @@
 from sqlalchemy.orm import Session
 
+from core import error_message, success_message
 from models import Category, Product
 from schemas import ProductCreate, ProductUpdate
-from utils import error_message, success_message
+
 
 def create_product_service(product: ProductCreate, db: Session):
-    category_existing = (
-        db.query(Category).filter(Category.id == product.categoria_id).first()
-    )
-    if not category_existing:
-        return error_message(
-            "Categoria invalida", code="INVALID_CATEGORY", status_code=400
-        )
+    if not db.query(Category).filter(Category.id == product.category_id, Category.is_active.is_(True)).first():
+        return error_message("Invalid category", code="INVALID_CATEGORY", status_code=400)
+
+    if db.query(Product).filter(Product.code == product.code).first():
+        return error_message("Product code already exists", code="CODE_IN_USE", status_code=400)
 
     new_product = Product(
-        nome=product.nome,
-        codigo=product.codigo,
-        quantidade=product.quantidade,
-        unid_medida=product.unid_medida,
-        estoque_minimo=product.estoque_minimo,
-        categoria_id=product.categoria_id,
-        ativo=product.ativo,
+        name=product.name,
+        code=product.code,
+        quantity=product.quantity,
+        unit_of_measure=product.unit_of_measure,
+        minimum_stock=product.minimum_stock,
+        category_id=product.category_id,
+        is_active=product.is_active,
     )
-
     db.add(new_product)
     db.commit()
     db.refresh(new_product)
 
-    return success_message(
-        "Produto cadastrado com sucesso",
-        {
-            "id": new_product.id,
-            "nome": new_product.nome,
-            "codigo": new_product.codigo,
-            "quantidade": new_product.quantidade,
-            "unid_medida": new_product.unid_medida,
-            "estoque_minimo": new_product.estoque_minimo,
-            "ativo": new_product.ativo,
-            "categoria_id": new_product.categoria_id,
-            "data_cadastro": new_product.data_cadastro,
-        },
-    )
+    return success_message("Product created successfully", data=new_product.to_dict())
+
 
 def update_product_service(product_id: int, product_data: ProductUpdate, db: Session):
-
     product = db.query(Product).filter(Product.id == product_id).first()
+
     if not product:
-        return error_message(
-            "Produto não encontrado", code="PRODUCT_NOT_FOUND", status_code=404
-        )
+        return error_message("Product not found", code="PRODUCT_NOT_FOUND", status_code=404)
 
-    if not product.ativo:
-        return error_message(
-            "Produto inativo", code="PRODUCT_INACTIVE", status_code=400
-        )
+    if not product.is_active:
+        return error_message("Product is inactive", code="PRODUCT_INACTIVE", status_code=400)
 
-    if (
-        product_data.nome is None
-        and product_data.codigo is None
-        and product_data.quantidade is None
-        and product_data.unid_medida is None
-        and product_data.estoque_minimo is None
-        and product_data.categoria_id is None
-        and product_data.ativo is None
+    if all(
+        value is None
+        for value in (
+            product_data.name,
+            product_data.code,
+            product_data.quantity,
+            product_data.unit_of_measure,
+            product_data.minimum_stock,
+            product_data.category_id,
+            product_data.is_active,
+        )
     ):
-        return error_message(
-            "Nenhuma informacao fornecida para atualizacao",
-            code="NO_UPDATE_DATA",
-            status_code=422,
-        )
+        return error_message("No update data provided", code="NO_UPDATE_DATA", status_code=422)
 
-    if product_data.categoria_id is not None:
-        category_existing = (
-            db.query(Category)
-            .filter(Category.id == product_data.categoria_id)
-            .first()
-        )
-        if not category_existing:
-            return error_message(
-                "Categoria invalida", code="INVALID_CATEGORY", status_code=400
-            )
-        product.categoria_id = product_data.categoria_id
+    if product_data.category_id is not None:
+        if not db.query(Category).filter(Category.id == product_data.category_id, Category.is_active.is_(True)).first():
+            return error_message("Invalid category", code="INVALID_CATEGORY", status_code=400)
+        product.category_id = product_data.category_id
 
-    if product_data.nome is not None:
-        product.nome = product_data.nome
-    if product_data.codigo is not None:
-        product.codigo = product_data.codigo
-    if product_data.quantidade is not None:
-        product.quantidade = product_data.quantidade
-    if product_data.unid_medida is not None:
-        product.unid_medida = product_data.unid_medida
-    if product_data.estoque_minimo is not None:
-        product.estoque_minimo = product_data.estoque_minimo
-    if product_data.ativo is not None:
-        product.ativo = product_data.ativo
+    if product_data.code is not None and product_data.code != product.code:
+        if db.query(Product).filter(Product.code == product_data.code, Product.id != product_id).first():
+            return error_message("Product code already exists", code="CODE_IN_USE", status_code=400)
+        product.code = product_data.code
+
+    if product_data.name is not None:
+        product.name = product_data.name
+    if product_data.quantity is not None:
+        product.quantity = product_data.quantity
+    if product_data.unit_of_measure is not None:
+        product.unit_of_measure = product_data.unit_of_measure
+    if product_data.minimum_stock is not None:
+        product.minimum_stock = product_data.minimum_stock
+    if product_data.is_active is not None:
+        product.is_active = product_data.is_active
 
     db.commit()
     db.refresh(product)
 
-    return success_message(
-        "Produto atualizado com sucesso",
-        {
-            "id": product.id,
-            "nome": product.nome,
-            "codigo": product.codigo,
-            "quantidade": product.quantidade,
-            "unid_medida": product.unid_medida,
-            "estoque_minimo": product.estoque_minimo,
-            "ativo": product.ativo,
-            "categoria_id": product.categoria_id,
-            "data_cadastro": product.data_cadastro,
-        },
-    )
+    return success_message("Product updated successfully", data=product.to_dict())
+
 
 def delete_product_service(product_id: int, db: Session):
-
     product = db.query(Product).filter(Product.id == product_id).first()
+
     if not product:
-        return error_message(
-            "Produto não encontrado", code="PRODUCT_NOT_FOUND", status_code=404
-        )
+        return error_message("Product not found", code="PRODUCT_NOT_FOUND", status_code=404)
 
-    if not product.ativo:
-        return error_message(
-            "Esse produto já está inativo", code="PRODUCT_INACTIVE"
-        )
-    
-    product.ativo = False
+    if not product.is_active:
+        return error_message("Product is already inactive", code="PRODUCT_INACTIVE", status_code=400)
 
-    db.add(product)
+    product.is_active = False
     db.commit()
     db.refresh(product)
-    
+
+    return success_message("Product deactivated successfully", data=product.to_dict())
+
+
+def list_products_service(db: Session):
+    products = db.query(Product).filter(Product.is_active.is_(True)).all()
+    message = "Products retrieved successfully" if products else "No products found"
+
     return success_message(
-        "Produto excluído com sucesso",
-        {
-            "id": product.id,
-            "nome": product.nome,
-            "codigo": product.codigo,
-            "quantidade": product.quantidade,
-            "unid_medida": product.unid_medida,
-            "estoque_minimo": product.estoque_minimo,
-            "ativo": product.ativo,
-            "categoria_id": product.categoria_id,
-            "data_cadastro": product.data_cadastro,
-        }
+        message,
+        data={"products": [product.to_dict() for product in products]},
     )
-
-
-def list_products_service(
-    db: Session, 
-    nome: str = None, 
-    codigo: str = None, 
-    categoria_id: int = None
-):
-    query = db.query(Product)
-
-    if nome:
-        query = query.filter(Product.nome.ilike(f"%{nome}%"))
-    if codigo:
-        query = query.filter(Product.codigo == codigo)
-    if categoria_id:
-        query = query.filter(Product.categoria_id == categoria_id)
-
-    products = query.all()
-
-    products_list = []
-    for product in products:
-        products_list.append({
-            "id": product.id,
-            "nome": product.nome,
-            "codigo": product.codigo,
-            "quantidade": product.quantidade, 
-            "unid_medida": product.unid_medida,
-            "estoque_minimo": product.estoque_minimo,
-            "ativo": product.ativo,
-            "categoria_id": product.categoria_id,
-            "data_cadastro": product.data_cadastro,
-            "estoque_baixo": product.quantidade <= product.estoque_minimo
-        })
-
-    return success_message("Produtos listados com sucesso", products_list)
 
 
 def get_product_by_id_service(product_id: int, db: Session):
     product = db.query(Product).filter(Product.id == product_id).first()
-    
-    if not product:
-        return error_message(
-            "Produto não encontrado", code="PRODUCT_NOT_FOUND", status_code=404
-        )
 
-    return success_message(
-        "Detalhes do produto recuperados com sucesso",
-        {
-            "id": product.id,
-            "nome": product.nome,
-            "codigo": product.codigo,
-            "quantidade": product.quantidade,
-            "unid_medida": product.unid_medida,
-            "estoque_minimo": product.estoque_minimo,
-            "ativo": product.ativo,
-            "categoria_id": product.categoria_id,
-            "data_cadastro": product.data_cadastro,
-            "estoque_baixo": product.quantidade <= product.estoque_minimo
-        }
-    )
+    if not product or not product.is_active:
+        return error_message("Product not found", code="PRODUCT_NOT_FOUND", status_code=404)
+
+    return success_message("Product retrieved successfully", data=product.to_dict())

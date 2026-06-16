@@ -1,8 +1,10 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
+from models import User
+from core import get_current_user
 from database import get_db
-from schemas import MovimentCreate
+from schemas import MovementCreate
 from services import (
     create_entry_service,
     create_exit_service,
@@ -11,7 +13,7 @@ from services import (
     list_movements_service,
 )
 
-router = APIRouter(prefix="/movements", tags=["Stocks Movements"])
+router = APIRouter(prefix="/movements", tags=["Movements"], dependencies=[Depends(get_current_user)])
 
 
 @router.get("/")
@@ -20,20 +22,32 @@ def list_movements(db: Session = Depends(get_db)):
 
 
 @router.get("/{movement_id}")
-def get_movement_by_id(movement_id: int, db: Session = Depends(get_db)):
+def get_movement(movement_id: int, db: Session = Depends(get_db)):
     return get_movement_by_id_service(movement_id, db)
 
 
-@router.post("/create_entry")
-def create_entry(entry: MovimentCreate, db: Session = Depends(get_db)):
-    return create_entry_service(entry, db)
+@router.post("/entry")
+def create_entry(
+    payload: MovementCreate,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    return create_entry_service(payload, db, int(current_user["user_id"]))
 
 
-@router.post("/create_exit")
-def create_exit(exit: MovimentCreate, db: Session = Depends(get_db)):
-    return create_exit_service(exit, db)
+@router.post("/exit")
+def create_exit(
+    payload: MovementCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return create_exit_service(payload, db, int(current_user["user_id"]))
 
 
-@router.post("/create_loss")
-def create_loss(loss: MovimentCreate, db: Session = Depends(get_db)):
-    return create_loss_service(loss, db)
+@router.post("/loss")
+def create_loss(
+    payload: MovementCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return create_loss_service(payload, db, int(current_user["user_id"]))

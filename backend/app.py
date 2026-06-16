@@ -1,13 +1,12 @@
+import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import uvicorn
 
-from database import engine
-from models import Base
+from core.config import CORS_ORIGINS
+from database import Base, engine
 from routes import (
     auth_router,
     categories_router,
-    items_router,
     movements_router,
     products_router,
     roles_router,
@@ -18,10 +17,7 @@ app = FastAPI(title="SCGE API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-    ],
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -29,7 +25,6 @@ app.add_middleware(
 
 app.include_router(auth_router)
 app.include_router(users_router)
-app.include_router(items_router)
 app.include_router(movements_router)
 app.include_router(roles_router)
 app.include_router(categories_router)
