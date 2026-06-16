@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
+from core import get_current_user, success_message
 from database import get_db
 from schemas import AuthRequest, UserCreate
 from services import auth_login, create_user_service, get_me_service
-from core import get_current_user, success_message
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -26,7 +26,7 @@ def me(current_user: dict = Depends(get_current_user), db: Session = Depends(get
 
 @router.post("/logout")
 def logout():
-    return success_message("Logout realizado com sucesso")
+    return success_message("Logout successful")
 
 
 @router.post("/forgot-password")

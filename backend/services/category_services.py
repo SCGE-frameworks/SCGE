@@ -1,176 +1,103 @@
 from sqlalchemy.orm import Session
 
+from core import error_message, success_message
 from models import Category
 from schemas import CategoryCreate, CategoryUpdate
-from core import error_message, success_message
 
 
 def create_category_service(category: CategoryCreate, db: Session):
+    existing = db.query(Category).filter(Category.name == category.name).first()
 
-    nome = category.nome
-    descricao = category.descricao
-    if not nome or not descricao:
-        return error_message(
-            "nome e descricao sao obrigatorios",
-            code="MISSING_FIELDS",
-            status_code=422,
-        )
+    if existing:
+        if existing.is_active:
+            return error_message("Category already exists", code="CATEGORY_IN_USE", status_code=400)
 
-    category_existing = db.query(Category).filter(Category.nome == nome).first()
-    if category_existing:
-        if category_existing.ativo:
-            return error_message(
-                "Categoria ja cadastrada", code="CATEGORY_IN_USE", status_code=400
-            )
-
-        category_existing.ativo = True
-        category_existing.descricao = descricao
-
+        existing.is_active = True
+        existing.description = category.description
         db.commit()
-        db.refresh(category_existing)
+        db.refresh(existing)
+        return success_message("Category reactivated successfully", data=existing.to_dict())
 
-        return success_message(
-            "Categoria reativada com sucesso",
-            {
-                "id": category_existing.id,
-                "nome": category_existing.nome,
-                "descricao": category_existing.descricao,
-                "ativo": category_existing.ativo,
-            },
-        )
-
-    new_category = Category(nome=nome, descricao=descricao, ativo=True)
+    new_category = Category(
+        name=category.name,
+        description=category.description,
+        is_active=True,
+    )
     db.add(new_category)
     db.commit()
     db.refresh(new_category)
 
-    return success_message(
-        "Categoria cadastrada com sucesso",
-        {
-            "id": new_category.id,
-            "nome": new_category.nome,
-            "descricao": new_category.descricao,
-            "ativo": new_category.ativo,
-        },
-    )
+    return success_message("Category created successfully", data=new_category.to_dict())
 
 
 def list_categories_service(db: Session):
+    categories = db.query(Category).filter(Category.is_active.is_(True)).all()
+    message = "Categories retrieved successfully" if categories else "No categories found"
 
-    categories = db.query(Category).filter(Category.ativo.is_(True)).all()
-    categories_data = []
-
-    for category in categories:
-        categories_data.append({
-            "id": category.id,
-            "nome": category.nome,
-            "descricao": category.descricao,
-            "ativo": category.ativo,
-        })
-        
-    message = "Lista de categorias" if categories else "Nenhuma categoria encontrada"
-    return success_message(message, categories_data)
+    return success_message(
+        message,
+        data={"categories": [category.to_dict() for category in categories]},
+    )
 
 
 def get_category_by_id_service(category_id: int, db: Session):
-    
     category = db.query(Category).filter(Category.id == category_id).first()
 
     if not category:
-        return error_message(
-            "Categoria nao encontrada", code="CATEGORY_NOT_FOUND", status_code=404
-        )
+        return error_message("Category not found", code="CATEGORY_NOT_FOUND", status_code=404)
 
-    if not category.ativo:
-        return error_message(
-            "Categoria inativa", code="CATEGORY_INACTIVE", status_code=404
-        )
+    if not category.is_active:
+        return error_message("Category is inactive", code="CATEGORY_INACTIVE", status_code=404)
 
-    return success_message(
-        "Detalhes da categoria",
-        {
-            "id": category.id,
-            "nome": category.nome,
-            "descricao": category.descricao,
-            "ativo": category.ativo,
-        },
-    )
+    return success_message("Category retrieved successfully", data=category.to_dict())
 
 
 def update_category_service(category_id: int, category_data: CategoryUpdate, db: Session):
-
     category = db.query(Category).filter(Category.id == category_id).first()
 
     if not category:
-        return error_message(
-            "Categoria nao encontrada", code="CATEGORY_NOT_FOUND", status_code=404
-        )
+        return error_message("Category not found", code="CATEGORY_NOT_FOUND", status_code=404)
 
-    if not category.ativo:
-        return error_message(
-            "Categoria inativa", code="CATEGORY_INACTIVE", status_code=400
-        )
+    if not category.is_active:
+        return error_message("Category is inactive", code="CATEGORY_INACTIVE", status_code=400)
 
-    if not category_data.nome and not category_data.descricao:
-        return error_message(
-            "Nenhuma informacao fornecida para atualizacao",
-            code="NO_UPDATE_DATA",
-            status_code=422,
-        )
+    if category_data.name is None and category_data.description is None:
+        return error_message("No update data provided", code="NO_UPDATE_DATA", status_code=422)
 
-    if category_data.nome is not None:
-        nome_taken = (
-            db.query(Category).filter(Category.nome == category_data.nome, Category.id != category_id, Category.ativo.is_(True),).first()
+    if category_data.name is not None:
+        name_taken = (
+            db.query(Category)
+            .filter(
+                Category.name == category_data.name,
+                Category.id != category_id,
+                Category.is_active.is_(True),
             )
+            .first()
+        )
+        if name_taken:
+            return error_message("Category already exists", code="CATEGORY_IN_USE", status_code=400)
+        category.name = category_data.name
 
-        if nome_taken:
-            return error_message(
-                "Essa categoria ja existe", code="CATEGORY_IN_USE", status_code=400
-            )
-            
-        category.nome = category_data.nome
-
-    if category_data.descricao is not None:
-        category.descricao = category_data.descricao
+    if category_data.description is not None:
+        category.description = category_data.description
 
     db.commit()
     db.refresh(category)
 
-    return success_message(
-        "Categoria atualizada com sucesso",
-        {
-            "id": category.id,
-            "nome": category.nome,
-            "descricao": category.descricao,
-            "ativo": category.ativo,
-        },
-    )
+    return success_message("Category updated successfully", data=category.to_dict())
 
 
 def delete_category_service(category_id: int, db: Session):
-
     category = db.query(Category).filter(Category.id == category_id).first()
-    if not category:
-        return error_message(
-            "Categoria nao encontrada", code="CATEGORY_NOT_FOUND", status_code=404
-        )
-    if not category.ativo:
-        return error_message(
-            "Categoria ja esta inativa",
-            code="CATEGORY_ALREADY_INACTIVE",
-            status_code=400,
-        )
 
-    category.ativo = False
+    if not category:
+        return error_message("Category not found", code="CATEGORY_NOT_FOUND", status_code=404)
+
+    if not category.is_active:
+        return error_message("Category is already inactive", code="CATEGORY_ALREADY_INACTIVE", status_code=400)
+
+    category.is_active = False
     db.commit()
     db.refresh(category)
 
-    return success_message(
-        "Categoria desativada com sucesso",
-        {
-            "id": category.id,
-            "nome": category.nome,
-            "descricao": category.descricao,
-            "ativo": category.ativo,
-        },
-    )
+    return success_message("Category deactivated successfully", data=category.to_dict())

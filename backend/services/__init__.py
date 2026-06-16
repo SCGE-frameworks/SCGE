@@ -6,7 +6,7 @@ from .category_services import (
     list_categories_service,
     update_category_service,
 )
-from .moviment_service import (
+from .movement_service import (
     create_entry_service,
     create_exit_service,
     create_loss_service,

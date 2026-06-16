@@ -1,6 +1,6 @@
 from database import Base
 from .category import Category
-from .moviment import Moviment, MovimentType
+from .movement import Movement, MovementType
 from .product import Product
 from .role import Role
 from .user import User
@@ -8,8 +8,8 @@ from .user import User
 __all__ = [
     "Base",
     "Category",
-    "Moviment",
-    "MovimentType",
+    "Movement",
+    "MovementType",
     "Product",
     "Role",
     "User",

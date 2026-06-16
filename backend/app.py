@@ -7,7 +7,6 @@ from database import Base, engine
 from routes import (
     auth_router,
     categories_router,
-    items_router,
     movements_router,
     products_router,
     roles_router,
@@ -26,7 +25,6 @@ app.add_middleware(
 
 app.include_router(auth_router)
 app.include_router(users_router)
-app.include_router(items_router)
 app.include_router(movements_router)
 app.include_router(roles_router)
 app.include_router(categories_router)
