@@ -4,7 +4,10 @@ import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer
 from passlib.context import CryptContext
+from sqlalchemy.orm import Session
 
+from database import get_db
+from models import User
 from core.config import ACCESS_TOKEN_EXPIRE_MINUTES, ALGORITHM, SECRET_KEY
 
 pwd_context = CryptContext(schemes=["bcrypt"])
@@ -55,5 +58,16 @@ def verify_token(token: str) -> dict:
         ) from exc
 
 
-def get_current_user(credentials: HTTPBearer = Depends(security)) -> dict:
-    return verify_token(credentials.credentials)
+def get_current_user(credentials: HTTPBearer = Depends(security), db: Session = Depends(get_db)) -> User:
+
+    token_data = verify_token(credentials.credentials)
+    user_id = token_data["user_id"]
+
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user or not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="user not found or inactive"
+        )
+    
+    return user

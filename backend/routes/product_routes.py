@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
+from core import get_current_user
 from database import get_db
 from schemas import ProductCreate, ProductUpdate
 from services import (
@@ -11,17 +12,12 @@ from services import (
     update_product_service,
 )
 
-router = APIRouter(prefix="/products", tags=["Products"])
+router = APIRouter(prefix="/products", tags=["Products"], dependencies=[Depends(get_current_user)])
 
 
 @router.get("/")
-def list_products(
-    name: str | None = Query(default=None),
-    code: str | None = Query(default=None),
-    category_id: int | None = Query(default=None),
-    db: Session = Depends(get_db),
-):
-    return list_products_service(db=db, name=name, code=code, category_id=category_id)
+def list_products(db: Session = Depends(get_db)):
+    return list_products_service(db)
 
 
 @router.get("/{product_id}")

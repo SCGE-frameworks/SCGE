@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
+from models import User
 from core import get_current_user
 from database import get_db
 from schemas import MovementCreate
@@ -12,7 +13,7 @@ from services import (
     list_movements_service,
 )
 
-router = APIRouter(prefix="/movements", tags=["Movements"])
+router = APIRouter(prefix="/movements", tags=["Movements"], dependencies=[Depends(get_current_user)])
 
 
 @router.get("/")
@@ -38,7 +39,7 @@ def create_entry(
 def create_exit(
     payload: MovementCreate,
     db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
     return create_exit_service(payload, db, int(current_user["user_id"]))
 
@@ -47,6 +48,6 @@ def create_exit(
 def create_loss(
     payload: MovementCreate,
     db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
     return create_loss_service(payload, db, int(current_user["user_id"]))

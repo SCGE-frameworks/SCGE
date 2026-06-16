@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
+from models import User
 from core import get_current_user, success_message
 from database import get_db
 from schemas import AuthRequest, UserCreate
@@ -20,12 +21,12 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
 
 
 @router.get("/me")
-def me(current_user: dict = Depends(get_current_user), db: Session = Depends(get_db)):
+def me(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     return get_me_service(current_user, db)
 
 
 @router.post("/logout")
-def logout():
+def logout(current_user: User = Depends(get_current_user)):
     return success_message("Logout successful")
 
 

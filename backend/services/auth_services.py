@@ -23,7 +23,7 @@ def auth_login(login_data: AuthRequest, db: Session):
     )
 
 
-def get_me_service(current_user: dict, db: Session):
+def get_me_service(current_user: User, db: Session):
     user = db.query(User).filter(User.id == current_user["user_id"]).first()
 
     if not user or not user.is_active:

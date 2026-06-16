@@ -94,25 +94,12 @@ def delete_product_service(product_id: int, db: Session):
     return success_message("Product deactivated successfully", data=product.to_dict())
 
 
-def list_products_service(
-    db: Session,
-    name: str | None = None,
-    code: str | None = None,
-    category_id: int | None = None,
-):
-    query = db.query(Product).filter(Product.is_active.is_(True))
-
-    if name:
-        query = query.filter(Product.name.ilike(f"%{name}%"))
-    if code:
-        query = query.filter(Product.code.ilike(f"%{code}%"))
-    if category_id:
-        query = query.filter(Product.category_id == category_id)
-
-    products = query.all()
+def list_products_service(db: Session):
+    products = db.query(Product).filter(Product.is_active.is_(True)).all()
+    message = "Products retrieved successfully" if products else "No products found"
 
     return success_message(
-        "Products retrieved successfully",
+        message,
         data={"products": [product.to_dict() for product in products]},
     )
 
