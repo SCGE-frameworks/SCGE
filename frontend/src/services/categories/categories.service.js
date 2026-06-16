@@ -1,3 +1,5 @@
+import { apiRequest } from '../api';
+
 let categories = [
   { id: 1, name: 'Categoria A', color: 'blue' },
   { id: 2, name: 'Categoria B', color: 'pink' },
@@ -21,3 +23,20 @@ export const atualizarCategoria = (id, data) => {
 export const deletarCategoria = (id) => {
   categories = categories.filter((c) => c.id !== Number(id));
 };
+
+export async function listarCategoriasApi() {
+  const response = await apiRequest('/categories/');
+  const categories = [];
+
+  for (const category of response.data) {
+    categories.push({
+      id: category.id,
+      name: category.nome,
+      description: category.descricao,
+      active: category.ativo,
+      color: 'blue',
+    });
+  }
+
+  return categories;
+}
