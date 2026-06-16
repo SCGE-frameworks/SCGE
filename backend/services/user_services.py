@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 
 from models import Role, User
 from schemas import UserCreate, UserUpdate
-from utils import error_message, hash_password, success_message
+from core import error_message, hash_password, success_message
 
 def get_users_service(db: Session):
     

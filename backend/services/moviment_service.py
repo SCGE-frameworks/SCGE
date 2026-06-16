@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from models import Moviment, MovimentType, Product
 from schemas import MovimentCreate
-from utils import error_message, success_message
+from core import error_message, success_message
 
 def _serialize_movement(movement: Moviment):
     return {

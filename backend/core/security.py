@@ -1,14 +1,12 @@
-import os
-import jwt
 from datetime import datetime, timedelta
-from passlib.context import CryptContext
+
+import jwt
 from fastapi import Depends
 from fastapi.security import HTTPBearer
-from .responses import error_message
+from passlib.context import CryptContext
 
-SECRET_KEY = os.getenv("SECRET_KEY", "your_secret_key")  
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
+from core.config import ACCESS_TOKEN_EXPIRE_MINUTES, ALGORITHM, SECRET_KEY
+from core.responses import error_message
 
 pwd_context = CryptContext(schemes=["bcrypt"])
 security = HTTPBearer()
@@ -20,52 +18,33 @@ def hash_password(password: str):
 
     return pwd_context.hash(password)
 
-def verify_password(
-    plain_password: str,
-    hashed_password: str
-):
-    return pwd_context.verify(
-        plain_password,
-        hashed_password
-    )
+
+def verify_password(plain_password: str, hashed_password: str):
+    return pwd_context.verify(plain_password, hashed_password)
+
 
 def create_access_token(data: dict):
     to_encode = data.copy()
+    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    to_encode.update({"exp": expire})
 
-    expire = datetime.utcnow() + timedelta(
-        minutes=ACCESS_TOKEN_EXPIRE_MINUTES
-    )
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
-    to_encode.update({
-        "exp": expire
-    })
-
-    return jwt.encode(
-        to_encode,
-        SECRET_KEY,
-        algorithm=ALGORITHM
-    )
 
 def verify_token(token: str):
     try:
-        payload = jwt.decode(
-            token,
-            SECRET_KEY,
-            algorithms=[ALGORITHM]
-        )
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id: str = payload.get("sub")
-        
+
         if user_id is None:
             return error_message("Token inválido", code="INVALID_TOKEN", status_code=401)
         return {"user_id": user_id}
-        
+
     except jwt.ExpiredSignatureError:
         return error_message("Token expirado", code="EXPIRED_TOKEN", status_code=401)
     except jwt.InvalidTokenError:
         return error_message("Token inválido", code="INVALID_TOKEN", status_code=401)
- 
-    except jwt.InvalidTokenError:
-        return error_message("Token inválido", code="INVALID_TOKEN", status_code=401)
+
 
 def get_current_user(credentials: HTTPBearer = Depends(security)):
     token = credentials.credentials

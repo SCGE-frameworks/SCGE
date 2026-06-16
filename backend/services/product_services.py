@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 
 from models import Category, Product
 from schemas import ProductCreate, ProductUpdate
-from utils import error_message, success_message
+from core import error_message, success_message
 
 def create_product_service(product: ProductCreate, db: Session):
     category_existing = (

@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from database import get_db
 from models import Role, User
 from schemas import RoleCreate
-from utils import error_message, get_current_user, success_message
+from core import error_message, get_current_user, success_message
 
 
 def require_role(role_name: str = None):

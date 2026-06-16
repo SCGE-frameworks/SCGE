@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from models import Role, User
 from schemas import AuthRequest
-from utils import (
+from core import (
     create_access_token,
     error_message,
     success_message,
