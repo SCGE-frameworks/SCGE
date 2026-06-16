@@ -4,20 +4,20 @@ from pydantic import BaseModel, Field
 
 
 class ProductCreate(BaseModel):
-    nome: str = Field(min_length=1, max_length=255)
-    codigo: str = Field(min_length=1, max_length=255)
-    quantidade: float = Field(ge=0)
-    unid_medida: str = Field(min_length=1, max_length=50)
-    estoque_minimo: int = Field(ge=0)
-    categoria_id: int
-    ativo: bool = True
+    name: str = Field(min_length=1, max_length=255)
+    code: str = Field(min_length=1, max_length=255)
+    quantity: float = Field(ge=0)
+    unit_of_measure: str = Field(min_length=1, max_length=50)
+    minimum_stock: int = Field(ge=0)
+    category_id: int = Field(gt=0)
+    is_active: bool = True
 
 
 class ProductUpdate(BaseModel):
-    nome: Optional[str] = Field(default=None, min_length=1, max_length=255)
-    codigo: Optional[str] = Field(default=None, min_length=1, max_length=255)
-    quantidade: Optional[float] = Field(default=None, ge=0)
-    unid_medida: Optional[str] = Field(default=None, min_length=1, max_length=50)
-    estoque_minimo: Optional[int] = Field(default=None, ge=0)
-    categoria_id: Optional[int] = None
-    ativo: Optional[bool] = None
+    name: Optional[str] = Field(default=None, min_length=1, max_length=255)
+    code: Optional[str] = Field(default=None, min_length=1, max_length=255)
+    quantity: Optional[float] = Field(default=None, ge=0)
+    unit_of_measure: Optional[str] = Field(default=None, min_length=1, max_length=50)
+    minimum_stock: Optional[int] = Field(default=None, ge=0)
+    category_id: Optional[int] = Field(default=None, gt=0)
+    is_active: Optional[bool] = None

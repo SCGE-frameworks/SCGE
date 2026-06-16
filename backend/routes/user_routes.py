@@ -24,16 +24,16 @@ def get_user(user_id: int, db: Session = Depends(get_db)):
     return get_user_service(user_id, db)
 
 
-@router.post("/create")
+@router.post("/")
 def create_user(user: UserCreate, db: Session = Depends(get_db)):
     return create_user_service(user, db)
 
 
-@router.put("/update/{user_id}")
+@router.put("/{user_id}")
 def update_user(user_id: int, data: UserUpdate, db: Session = Depends(get_db)):
     return update_user_service(user_id, data, db)
 
 
-@router.delete("/delete/{user_id}")
+@router.delete("/{user_id}")
 def delete_user(user_id: int, db: Session = Depends(get_db)):
     return delete_user_service(user_id, db)

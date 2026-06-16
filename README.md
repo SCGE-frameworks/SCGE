@@ -58,20 +58,20 @@ O protótipo contempla telas como login, recuperação de senha, dashboard, esto
 ```text
 SCGE/
 ├── backend/
-│   ├── app.py              # entrada FastAPI
-│   ├── core/               # config, segurança (JWT), respostas padronizadas
-│   ├── database/           # engine, sessão SQLAlchemy, Base
-│   ├── models/             # entidades ORM
-│   ├── schemas/            # contratos Pydantic (entrada)
-│   ├── routes/             # endpoints HTTP
-│   └── services/           # regras de negócio
+│   ├── app.py
+│   ├── core/               # config, JWT, respostas padronizadas
+│   ├── database/           # engine, sessão, Base
+│   ├── models/
+│   ├── schemas/
+│   ├── routes/
+│   └── services/
 ├── frontend/
 ├── README.md
 └── .gitignore
 ```
 
-- **backend:** API em camadas — `routes` → `services` → `models`, com `core` e `database` compartilhados.
-- **frontend:** interface React, páginas, components, layouts, services e rotas.
+- **backend:** API em camadas, código e contrato JSON em inglês (`core` + `database`).
+- **frontend:** interface React; telas em português, integração com API via `services/*.api.js`.
 
 ## Como executar o backend localmente
 

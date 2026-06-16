@@ -1,17 +1,37 @@
 from datetime import datetime, timezone
+
 from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Integer, String
+
 from database import Base
 
 
 class Product(Base):
-    __tablename__ = "produtos"
+    __tablename__ = "products"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    nome = Column(String, nullable=False, unique=True)
-    codigo = Column(String, nullable=False, unique=True)
-    quantidade = Column(Float, nullable=False)
-    unid_medida = Column(String, nullable=False)
-    estoque_minimo = Column(Integer, nullable=False)
-    ativo = Column(Boolean, default=True)
-    categoria_id = Column(Integer, ForeignKey("categorias.id"))
-    data_cadastro = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    name = Column(String(255), nullable=False, unique=True)
+    code = Column(String(255), nullable=False, unique=True)
+    quantity = Column(Float, nullable=False, default=0)
+    unit_of_measure = Column(String(50), nullable=False)
+    minimum_stock = Column(Integer, nullable=False, default=0)
+    is_active = Column(Boolean, default=True, nullable=False)
+    category_id = Column(Integer, ForeignKey("categories.id"), nullable=False)
+    created_at = Column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc),
+    )
+
+    def to_dict(self) -> dict:
+        return {
+            "id": self.id,
+            "name": self.name,
+            "code": self.code,
+            "quantity": self.quantity,
+            "unit_of_measure": self.unit_of_measure,
+            "minimum_stock": self.minimum_stock,
+            "is_active": self.is_active,
+            "category_id": self.category_id,
+            "created_at": self.created_at,
+            "low_stock": self.quantity <= self.minimum_stock,
+        }
