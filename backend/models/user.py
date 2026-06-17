@@ -13,7 +13,11 @@ class User(Base):
     is_active = Column(Boolean, default=True, nullable=False)
     role_id = Column(Integer, ForeignKey("roles.id"), nullable=False)
 
-    def to_dict(self, role_name: str | None = None) -> dict:
+    def to_dict(
+        self,
+        role_name: str | None = None,
+        access_level: int | None = None,
+    ) -> dict:
         data = {
             "id": self.id,
             "name": self.name,
@@ -23,4 +27,6 @@ class User(Base):
         }
         if role_name is not None:
             data["role_name"] = role_name
+        if access_level is not None:
+            data["access_level"] = access_level
         return data

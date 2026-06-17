@@ -2,7 +2,7 @@ from database import Base
 from .category import Category
 from .movement import Movement, MovementType
 from .product import Product
-from .role import Role
+from .role import AccessLevels, Role
 from .user import User
 
 __all__ = [
@@ -13,4 +13,5 @@ __all__ = [
     "Product",
     "Role",
     "User",
+    "AccessLevels",
 ]

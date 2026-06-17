@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from models import User
-from core import get_current_user
+from models import AccessLevels, User
 from database import get_db
+from core import require_min_access_level, get_current_user
 from schemas import MovementCreate
 from services import (
     create_entry_service,
@@ -17,12 +17,12 @@ router = APIRouter(prefix="/movements", tags=["Movements"], dependencies=[Depend
 
 
 @router.get("/")
-def list_movements(db: Session = Depends(get_db)):
+def list_movements(db: Session = Depends(get_db), current_user: User = Depends(require_min_access_level(AccessLevels.VIEWER))):
     return list_movements_service(db)
 
 
 @router.get("/{movement_id}")
-def get_movement(movement_id: int, db: Session = Depends(get_db)):
+def get_movement_by_id(movement_id: int, db: Session = Depends(get_db), current_user: User = Depends(require_min_access_level(AccessLevels.VIEWER))):
     return get_movement_by_id_service(movement_id, db)
 
 
@@ -30,24 +30,24 @@ def get_movement(movement_id: int, db: Session = Depends(get_db)):
 def create_entry(
     payload: MovementCreate,
     db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user),
+    current_user: User = Depends(require_min_access_level(AccessLevels.OPERATOR)),
 ):
-    return create_entry_service(payload, db, int(current_user["user_id"]))
+    return create_entry_service(payload, db, current_user.id)
 
 
 @router.post("/exit")
 def create_exit(
     payload: MovementCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_min_access_level(AccessLevels.OPERATOR)),
 ):
-    return create_exit_service(payload, db, int(current_user["user_id"]))
+    return create_exit_service(payload, db, current_user.id)
 
 
 @router.post("/loss")
 def create_loss(
     payload: MovementCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_min_access_level(AccessLevels.OPERATOR)),
 ):
-    return create_loss_service(payload, db, int(current_user["user_id"]))
+    return create_loss_service(payload, db, current_user.id)

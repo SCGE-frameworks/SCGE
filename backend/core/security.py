@@ -6,8 +6,10 @@ from fastapi.security import HTTPBearer
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
+from backend.core import error_message
+from backend.models.role import AccessLevels
 from database import get_db
-from models import User
+from models import Role, User
 from core.config import ACCESS_TOKEN_EXPIRE_MINUTES, ALGORITHM, SECRET_KEY
 
 pwd_context = CryptContext(schemes=["bcrypt"])
@@ -71,3 +73,24 @@ def get_current_user(credentials: HTTPBearer = Depends(security), db: Session = 
         )
     
     return user
+
+def require_min_access_level(min_level: AccessLevels):
+    def checker(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)) -> User:
+
+        role = db.query(Role).filter(Role.id == current_user.role_id).first()
+        if not role:
+            return error_message("Role not found", code="ROLE_NOT_FOUND", status_code=404)
+        
+        user_level = role.access_level
+
+        if user_level < min_level:
+            raise HTTPException(
+                status_code=403,
+                detail="Insufficient access level"
+            )
+        
+        return current_user
+
+    return checker
+
+
