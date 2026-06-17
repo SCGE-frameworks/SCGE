@@ -11,6 +11,7 @@ from routes import (
     products_router,
     roles_router,
     users_router,
+    reports_router,
 )
 
 app = FastAPI(title="SCGE API")
@@ -29,6 +30,7 @@ app.include_router(movements_router)
 app.include_router(roles_router)
 app.include_router(categories_router)
 app.include_router(products_router)
+app.include_router(reports_router)
 
 Base.metadata.create_all(bind=engine)
 

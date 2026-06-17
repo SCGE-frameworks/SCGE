@@ -9,9 +9,9 @@ router = APIRouter(prefix="/reports", tags=["Reports"], dependencies=[Depends(ge
 @router.get("/low-stock")
 def get_low_stock_report(db: Session = Depends(get_db)):
 
-    low_stock_products = db.query(Product).filter(Product.is_active == True, Product.quantity <= Product.minimum_stock).all()
+    low_stock_products = db.query(Product).filter(Product.is_active.is_(True), Product.quantity <= Product.minimum_stock).all()
 
     return success_message(
-        "",
+        "Low stock products report",
         data={"products": [product.to_dict() for product in low_stock_products]}
     )
