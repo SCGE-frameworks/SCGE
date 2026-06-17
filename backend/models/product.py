@@ -33,5 +33,4 @@ class Product(Base):
             "is_active": self.is_active,
             "category_id": self.category_id,
             "created_at": self.created_at,
-            "low_stock": self.quantity <= self.minimum_stock,
         }
