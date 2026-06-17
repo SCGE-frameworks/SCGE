@@ -42,7 +42,7 @@ def role_create_service(role_data: RoleCreate, db: Session):
     if db.query(Role).filter(Role.name == role_data.name).first():
         return error_message("Role already exists", code="ROLE_ALREADY_EXISTS", status_code=400)
 
-    new_role = Role(name=role_data.name, is_active=role_data.is_active)
+    new_role = Role(name=role_data.name, access_level=role_data.access_level, is_active=role_data.is_active)
     db.add(new_role)
     db.commit()
     db.refresh(new_role)
@@ -63,6 +63,7 @@ def role_update_service(role_id: int, role_data: RoleCreate, db: Session):
         return error_message("Role already exists", code="ROLE_ALREADY_EXISTS", status_code=400)
 
     role.name = role_data.name
+    role.access_level = role_data.access_level
     role.is_active = role_data.is_active
     db.commit()
     db.refresh(role)

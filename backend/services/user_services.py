@@ -5,11 +5,18 @@ from models import Role, User
 from schemas import UserCreate, UserUpdate
 
 
-def _get_role_name(db: Session, role_id: int | None) -> str | None:
+def _get_role_info(db: Session, role_id: int | None) -> tuple[str | None, int | None]:
     if not role_id:
-        return None
+        return None, None
     role = db.query(Role).filter(Role.id == role_id).first()
-    return role.name if role else None
+    if not role:
+        return None, None
+    return role.name, role.access_level.value
+
+
+def _user_to_dict(user: User, db: Session) -> dict:
+    role_name, access_level = _get_role_info(db, user.role_id)
+    return user.to_dict(role_name=role_name, access_level=access_level)
 
 
 def get_users_service(db: Session):
@@ -18,9 +25,7 @@ def get_users_service(db: Session):
     if not users:
         return error_message("No users found", code="USERS_NOT_FOUND", status_code=404)
 
-    users_data = [
-        user.to_dict(role_name=_get_role_name(db, user.role_id)) for user in users
-    ]
+    users_data = [_user_to_dict(user, db) for user in users]
 
     return success_message("Users retrieved successfully", data={"users": users_data})
 
@@ -33,7 +38,7 @@ def get_user_service(user_id: int, db: Session):
 
     return success_message(
         "User retrieved successfully",
-        data=user.to_dict(role_name=_get_role_name(db, user.role_id)),
+        data=_user_to_dict(user, db),
     )
 
 
@@ -56,7 +61,7 @@ def create_user_service(user: UserCreate, db: Session):
 
     return success_message(
         "User created successfully",
-        data=new_user.to_dict(role_name=_get_role_name(db, new_user.role_id)),
+        data=_user_to_dict(new_user, db),
     )
 
 
@@ -87,7 +92,7 @@ def update_user_service(user_id: int, data: UserUpdate, db: Session):
 
     return success_message(
         "User updated successfully",
-        data=user.to_dict(role_name=_get_role_name(db, user.role_id)),
+        data=_user_to_dict(user, db),
     )
 
 
@@ -103,5 +108,5 @@ def delete_user_service(user_id: int, db: Session):
 
     return success_message(
         "User deactivated successfully",
-        data=user.to_dict(role_name=_get_role_name(db, user.role_id)),
+        data=_user_to_dict(user, db),
     )
