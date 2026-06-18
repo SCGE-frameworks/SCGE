@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
 import { Button, Input } from '../../components/ui';
 
-function ModalRelatorio({ isOpen, onClose, categorias }) {
+function ModalRelatorio({ isOpen, onClose, categorias, onSalvar }) {
   const [arquivo, setArquivo] = useState(null);
+  const [nome, setNome] = useState('');
+  const [categoria, setCategoria] = useState('');
+  // Força a data de hoje para o input
+  const [dataRef, setDataRef] = useState(new Date().toISOString().slice(0, 10));
 
   if (!isOpen) return null;
 
@@ -10,11 +14,27 @@ function ModalRelatorio({ isOpen, onClose, categorias }) {
     setArquivo(e.target.files[0]);
   };
 
+  const gerar = (e) => {
+    e.preventDefault();
+    if(onSalvar) {
+      onSalvar({
+        nome: nome || 'Relatório Gerado',
+        categoria: categoria || categorias[0],
+        // Ajuste do Fuso Horário para não voltar um dia
+        dataGeracao: new Date(`${dataRef}T12:00:00`).toISOString(),
+        status: arquivo ? 'Pronto' : 'Processando',
+        formato: arquivo ? arquivo.name.split('.').pop().toUpperCase() : 'PDF'
+      });
+    }
+    // Limpa os campos ao fechar
+    setNome(''); setCategoria(''); setArquivo(null);
+    onClose();
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-lg overflow-hidden rounded-xl bg-white shadow-xl">
+      <form onSubmit={gerar} className="w-full max-w-lg overflow-hidden rounded-xl bg-white shadow-xl">
         
-        {/* Header do Modal */}
         <div className="flex items-start justify-between border-b border-slate-200 px-6 py-5">
           <div className="flex items-center gap-3">
             <div className="rounded-lg bg-brand-50 p-2 text-brand-500 text-sm font-bold">
@@ -30,21 +50,20 @@ function ModalRelatorio({ isOpen, onClose, categorias }) {
           </button>
         </div>
 
-        {/* Formulário */}
         <div className="p-6 space-y-5">
-          <Input label="Nome do Relatório" placeholder="Ex: Item A - Relatório" />
+          <Input label="Nome do Relatório" required value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Ex: Auditoria Semanal" />
 
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-1">
               <label className="text-xs font-medium text-slate-700">Categoria</label>
-              <select className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500">
+              <select required value={categoria} onChange={(e) => setCategoria(e.target.value)} className="h-11 rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500">
                 <option value="">Selecione...</option>
                 {categorias?.map((cat) => (
-                  <option key={cat} value={cat}>Categoria {cat}</option>
+                  <option key={cat} value={cat}>{cat}</option>
                 ))}
               </select>
             </div>
-            <Input label="Data" type="date" />
+            <Input label="Data de Referência" required type="date" value={dataRef} onChange={(e) => setDataRef(e.target.value)} />
           </div>
 
           <div className="flex flex-col gap-1">
@@ -73,16 +92,16 @@ function ModalRelatorio({ isOpen, onClose, categorias }) {
           </div>
         </div>
 
-        {/* Footer */}
         <div className="flex items-center justify-end gap-3 border-t border-slate-200 bg-slate-50 px-6 py-4">
           <button type="button" onClick={onClose} className="text-sm font-medium text-slate-600 hover:text-slate-900">
             Cancelar
           </button>
-          <Button onClick={onClose}>Gerar Relatório</Button>
+          <Button type="submit">Gerar Relatório</Button>
         </div>
-      </div>
+      </form>
     </div>
   );
 }
 
+// A LINHA QUE FALTAVA PARA A TELA BRANCA SUMIR!
 export default ModalRelatorio;

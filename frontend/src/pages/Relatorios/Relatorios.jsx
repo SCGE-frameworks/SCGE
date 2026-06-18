@@ -1,48 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { PageWrapper } from '../../components/layout/PageWrapper';
 import { Input } from '../../components/ui';
 import ModalRelatorio from './ModalRelatorio';
+import { GlobalStateContext } from '../../contexts/GlobalStateContext';
 
 const coresCategoria = {
-  'A': 'bg-blue-100 text-blue-700',
-  'B': 'bg-pink-100 text-pink-700',
-  'C': 'bg-amber-100 text-amber-700',
+  'Tecnologia': 'bg-blue-100 text-blue-700',
+  'Eletrodomésticos': 'bg-pink-100 text-pink-700',
+  'Móveis': 'bg-amber-100 text-amber-700',
 };
 
-const mockRelatorios = [
-  { id: 'REL-001', nome: 'Item A', categoria: 'A', dataGeracao: '2026-05-12', status: 'Pronto', formato: 'PDF' },
-  { id: 'REL-002', nome: 'Item B', categoria: 'B', dataGeracao: '2026-05-10', status: 'Processando', formato: 'XLSX' },
-  { id: 'REL-003', nome: 'Item C', categoria: 'C', dataGeracao: '2026-05-08', status: 'Pronto', formato: 'CSV' }
-];
-
-const categoriasDisponiveis = ['A', 'B', 'C'];
-
 export default function Relatorios() {
+  const { relatorios, categorias, addRelatorio } = useContext(GlobalStateContext);
+
   const [busca, setBusca] = useState('');
   const [categoriaSelecionada, setCategoriaSelecionada] = useState('');
   const [dataInicio, setDataInicio] = useState('');
   const [dataFim, setDataFim] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const relatoriosFiltrados = mockRelatorios.filter((relatorio) => {
-    // 1. Filtro por Busca (Nome ou ID)
+  const relatoriosFiltrados = relatorios.filter((relatorio) => {
     const termoBusca = busca.toLowerCase();
     const matchBusca = relatorio.nome.toLowerCase().includes(termoBusca) || relatorio.id.toLowerCase().includes(termoBusca);
     
-    // 2. Filtro por Categoria
     const matchCategoria = categoriaSelecionada === '' || relatorio.categoria === categoriaSelecionada;
     
-    // 3. Filtro por Data
     let matchData = true;
     if (dataInicio || dataFim) {
       const dataRel = new Date(relatorio.dataGeracao);
       dataRel.setUTCHours(12, 0, 0, 0);
 
-      const inicio = dataInicio ? new Date(dataInicio) : new Date('2000-01-01');
-      inicio.setUTCHours(0, 0, 0, 0);
-
-      const fim = dataFim ? new Date(dataFim) : new Date('2100-01-01');
-      fim.setUTCHours(23, 59, 59, 999);
+      const inicio = dataInicio ? new Date(`${dataInicio}T00:00:00`) : new Date('2000-01-01');
+      const fim = dataFim ? new Date(`${dataFim}T23:59:59`) : new Date('2100-01-01');
       
       matchData = dataRel >= inicio && dataRel <= fim;
     }
@@ -51,11 +40,10 @@ export default function Relatorios() {
   });
 
   const formatarDataBr = (dataIso) => {
-    const [ano, mes, dia] = dataIso.split('-');
+    const [ano, mes, dia] = dataIso.split('T')[0].split('-');
     return `${dia}/${mes}/${ano}`;
   };
 
-  // NOVA FUNÇÃO: Limpar todos os filtros
   const limparFiltros = () => {
     setBusca('');
     setCategoriaSelecionada('');
@@ -68,7 +56,6 @@ export default function Relatorios() {
       <div className="flex flex-col lg:flex-row gap-8 items-start">
         <aside className="w-full lg:w-1/4 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
           
-          {/* CABEÇALHO DO FILTRO COM BOTÃO LIMPAR */}
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-base font-semibold text-slate-900">Filtros</h2>
             {(busca || categoriaSelecionada || dataInicio || dataFim) && (
@@ -96,7 +83,7 @@ export default function Relatorios() {
                 className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm"
               >
                 <option value="">Todas</option>
-                {categoriasDisponiveis.map(cat => <option key={cat} value={cat}>Categoria {cat}</option>)}
+                {categorias.map(cat => <option key={cat.id} value={cat.name}>{cat.name}</option>)}
               </select>
             </div>
 
@@ -129,8 +116,8 @@ export default function Relatorios() {
                   <tr key={rel.id} className="hover:bg-slate-50 transition-colors">
                     <td className="px-6 py-4 font-medium text-slate-900">{rel.nome}</td>
                     <td className="px-6 py-4">
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${coresCategoria[rel.categoria]}`}>
-                        Categoria {rel.categoria}
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${coresCategoria[rel.categoria] || 'bg-slate-100 text-slate-700'}`}>
+                        {rel.categoria}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-slate-500">{formatarDataBr(rel.dataGeracao)}</td>
@@ -140,7 +127,6 @@ export default function Relatorios() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      {/* BOTÃO BAIXAR COM LÓGICA DE DISABLED */}
                       <button 
                         disabled={rel.status !== 'Pronto'}
                         className={`font-medium transition-colors ${
@@ -157,9 +143,7 @@ export default function Relatorios() {
               ) : (
                 <tr>
                   <td colSpan="5" className="px-6 py-12 text-center">
-                    <svg className="w-12 h-12 text-slate-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     <p className="text-slate-500 font-medium">Nenhum relatório encontrado.</p>
-                    <p className="text-slate-400 text-xs mt-1">Tente ajustar ou limpar os filtros aplicados.</p>
                   </td>
                 </tr>
               )}
@@ -168,10 +152,12 @@ export default function Relatorios() {
         </div>
       </div>
 
+      {/* AQUI: O Modal interno da tela de relatórios TAMBÉM recebe a função! */}
       <ModalRelatorio 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
-        categorias={categoriasDisponiveis}
+        categorias={categorias.map(c => c.name)}
+        onSalvar={addRelatorio}
       />
     </PageWrapper>
   );
