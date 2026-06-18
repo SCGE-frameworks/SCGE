@@ -5,17 +5,28 @@ import ModalRelatorio from '../Relatorios/ModalRelatorio';
 import ModalMovimentacao from '../Movimentacoes/ModalMovimentacao';
 
 export default function Dashboard() {
-  // AQUI: Adicionei o addRelatorio que estava faltando!
   const { items, categorias, addProduto, movimentacoes, addMovimentacao, addRelatorio } = useContext(GlobalStateContext);
 
   const [modalProdutoAberto, setModalProdutoAberto] = useState(false);
   const [modalRelatorioAberto, setModalRelatorioAberto] = useState(false);
   const [modalMovimentacaoAberto, setModalMovimentacaoAberto] = useState(false);
 
-  // Cálculos dinâmicos
   const totalAtivos = items.reduce((acc, curr) => acc + Number(curr.quantity), 0);
   const itensEmBaixa = items.filter((i) => i.quantity <= i.min_quantity).length;
   const valorTotal = items.reduce((acc, curr) => acc + (Number(curr.price || 0) * Number(curr.quantity)), 0);
+
+  const totaisOperacao = { 'Entradas': 0, 'Saídas': 0 };
+  movimentacoes.forEach(m => {
+    if (m.type === 'IN') totaisOperacao['Entradas'] += Number(m.quantity);
+    if (m.type === 'OUT') totaisOperacao['Saídas'] += Number(m.quantity);
+  });
+
+  const dadosGrafico = [
+    { nome: 'Total Entradas', total: totaisOperacao['Entradas'], cor: 'bg-green-900 hover:bg-green-700' },
+    { nome: 'Total Saídas', total: totaisOperacao['Saídas'], cor: 'bg-blue-500 hover:bg-blue-600' }
+  ];
+
+  const maxMovimentacoes = Math.max(...dadosGrafico.map(d => d.total), 1);
 
   return (
     <div className="p-8 bg-slate-50 min-h-screen font-sans">
@@ -37,7 +48,7 @@ export default function Dashboard() {
         
         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-green-600">
+            <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-green-700">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             </div>
             <h3 className="text-sm font-medium text-slate-500">Valor do Inventário</h3>
@@ -58,6 +69,29 @@ export default function Dashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">
+          
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-6 font-title">Entradas vs Saídas</h2>
+            <div className="h-64 flex items-end justify-around gap-12 pt-8 px-10">
+              {dadosGrafico.map((d, idx) => (
+                <div key={idx} className="flex flex-col items-center flex-1 h-full justify-end group">
+                  <div 
+                    className={`relative w-full rounded-t-md transition-all duration-500 ${d.cor}`} 
+                    style={{ 
+                      height: `${(d.total / maxMovimentacoes) * 100}%`, 
+                      minHeight: d.total > 0 ? '24px' : '4px' 
+                    }}
+                  >
+                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-700 text-white text-xs font-bold px-2 py-1 rounded shadow">
+                      {d.total}
+                    </div>
+                  </div>
+                  <span className="text-sm font-bold text-slate-600 mt-3 text-center">{d.nome}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
           <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-lg font-semibold text-gray-900 font-title">Atividades Recentes</h2>
@@ -69,14 +103,14 @@ export default function Dashboard() {
               ) : movimentacoes.slice(0, 5).map((m) => (
                 <div key={m.id} className="flex items-center justify-between py-3 border-b border-slate-50 last:border-0">
                   <div className="flex items-center gap-4">
-                    <div className={`w-2 h-2 rounded-full ${m.type === 'IN' ? 'bg-green-500' : m.type === 'OUT' ? 'bg-blue-500' : 'bg-amber-500'}`}></div>
+                    <div className={`w-2 h-2 rounded-full ${m.type === 'IN' ? 'bg-green-600' : 'bg-blue-500'}`}></div>
                     <div>
                       <p className="text-sm font-medium text-gray-900">{m.item_name}</p>
-                      <p className="text-xs text-slate-500">{m.type === 'IN' ? 'ENTRADA' : m.type === 'OUT' ? 'SAÍDA' : 'AJUSTE'} • {new Date(m.created_at).toLocaleDateString('pt-BR')}</p>
+                      <p className="text-xs text-slate-500">{m.type === 'IN' ? 'ENTRADA' : 'SAÍDA'} • {new Date(m.created_at).toLocaleDateString('pt-BR')}</p>
                     </div>
                   </div>
-                  <span className={`text-sm font-bold ${m.type === 'IN' ? 'text-green-600' : m.type === 'OUT' ? 'text-blue-600' : 'text-amber-600'}`}>
-                    {m.type === 'IN' ? '+' : m.type === 'OUT' ? '-' : ''}{m.quantity}
+                  <span className={`text-sm font-bold ${m.type === 'IN' ? 'text-green-700' : 'text-blue-600'}`}>
+                    {m.type === 'IN' ? '+' : '-'}{m.quantity}
                   </span>
                 </div>
               ))}
@@ -107,7 +141,6 @@ export default function Dashboard() {
 
       <ModalProduto isOpen={modalProdutoAberto} onClose={() => setModalProdutoAberto(false)} categorias={categorias} onSalvar={addProduto} />
       <ModalMovimentacao isOpen={modalMovimentacaoAberto} onClose={() => setModalMovimentacaoAberto(false)} onRegistrar={addMovimentacao} />
-      {/* AQUI: O onSalvar={addRelatorio} finalmente conecta o Modal ao Contexto! */}
       <ModalRelatorio isOpen={modalRelatorioAberto} onClose={() => setModalRelatorioAberto(false)} categorias={categorias.map(c => c.name)} onSalvar={addRelatorio} />
     </div>
   );

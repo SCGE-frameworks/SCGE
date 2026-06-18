@@ -1,16 +1,15 @@
 import { PageWrapper } from "../../components/layout/PageWrapper";
 import { useState, useContext } from 'react';
 import { Button, Card, Input, Table } from '../../components/ui';
-import { ArrowDownCircle, ArrowUpCircle, AlertTriangle, PlusCircle } from 'lucide-react';
+import { ArrowDownCircle, ArrowUpCircle, PlusCircle } from 'lucide-react';
 import { GlobalStateContext } from '../../contexts/GlobalStateContext';
 
 const TIPO_CONFIG = {
   IN: { label: 'ENTRADA', cor: 'bg-green-100 text-green-700 border border-green-200', icone: <ArrowDownCircle size={13} /> },
   OUT: { label: 'SAÍDA', cor: 'bg-blue-100 text-blue-700 border border-blue-200', icone: <ArrowUpCircle size={13} /> },
-  ADJUSTMENT: { label: 'AJUSTE', cor: 'bg-amber-100 text-amber-700 border border-amber-200', icone: <AlertTriangle size={13} /> },
 };
 
-const MOTIVOS = ['Reposição Fornecedor', 'Venda Direta', 'Ajuste de Inventário', 'Avaria no Transporte', 'Projeto Interno', 'Outro'];
+const MOTIVOS = ['Reposição Fornecedor', 'Venda Direta', 'Avaria no Transporte', 'Projeto Interno', 'Outro'];
 
 const formatarData = (iso) => {
   const d = new Date(iso);
@@ -18,7 +17,7 @@ const formatarData = (iso) => {
 };
 
 function Movimentacoes() {
-  const { movimentacoes, addMovimentacao } = useContext(GlobalStateContext);
+  const { items, movimentacoes, addMovimentacao } = useContext(GlobalStateContext);
   
   const [periodo, setPeriodo] = useState('semana');
   const [ordenar, setOrdenar] = useState('recentes');
@@ -27,8 +26,10 @@ function Movimentacoes() {
   const [quantidade, setQtd] = useState('');
   const [motivo, setMotivo] = useState('');
 
+  const itemSelecionado = items.find(i => i.name === produto);
+  const estoqueInsuficiente = operacao === 'OUT' && itemSelecionado && Number(quantidade) > itemSelecionado.quantity;
   const qtdNum = Number(quantidade);
-  const invalido = !produto || !quantidade || !motivo;
+  const invalido = !produto || !quantidade || !motivo || estoqueInsuficiente || qtdNum <= 0;
 
   const handleLimpar = () => {
     setProduto(''); 
@@ -54,33 +55,44 @@ function Movimentacoes() {
       item_name: produto,
       quantity: qtdNum,
       reason: motivo,
-      created_at: new Date().toISOString(), // Pega exatamente a data e hora do momento do clique
+      created_at: new Date().toISOString(),
       type: operacao
     });
     handleLimpar();
   };
 
   return (
-    <PageWrapper title="Movimentações" description="Gerencie entrada e saída de produtos">
+    <PageWrapper title="Movimentações" description="Gerencie entrada e saída do estoque">
       <Card className="space-y-4">
         <h2 className="flex items-center gap-2 text-lg font-bold text-brand-500 mb-4">
           <PlusCircle size={20} /> Nova Operação
         </h2>
 
-        <Input label="PRODUTO" value={produto} onChange={(e) => setProduto(e.target.value)} placeholder="Nome do produto" />
+        <div>
+          <label className="text-xs font-medium text-gray-600 mb-1 block">PRODUTO CADASTRADO</label>
+          <select value={produto} onChange={(e) => setProduto(e.target.value)} className="h-11 w-full rounded-md border border-gray-300 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+            <option value="">Selecione na lista de inventário...</option>
+            {items.map(i => (
+              <option key={i.id} value={i.name}>{i.name} (Estoque atual: {i.quantity})</option>
+            ))}
+          </select>
+        </div>
 
-        {/* Grid de 3 colunas atualizado: Operação, Qtd e Motivo */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="text-xs font-medium text-gray-600 mb-1 block">OPERAÇÃO</label>
             <select value={operacao} onChange={(e) => setOperacao(e.target.value)} className="h-11 w-full rounded-md border border-gray-300 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
-              <option value="IN">Entrada</option>
-              <option value="OUT">Saída</option>
-              <option value="ADJUSTMENT">Ajuste</option>
+              <option value="IN">Entrada (+)</option>
+              <option value="OUT">Saída (-)</option>
             </select>
           </div>
           
-          <Input label="QTD" type="number" min="1" value={quantidade} onChange={(e) => setQtd(e.target.value)} />
+          <div>
+            <Input label="QUANTIDADE" type="number" min="1" value={quantidade} onChange={(e) => setQtd(e.target.value)} />
+            {estoqueInsuficiente && (
+              <span className="text-[10px] text-red-500 font-bold block mt-1">Estoque insuficiente!</span>
+            )}
+          </div>
           
           <div>
             <label className="text-xs font-medium text-gray-600 mb-1 block">MOTIVO</label>
@@ -91,7 +103,6 @@ function Movimentacoes() {
           </div>
         </div>
 
-        {/* Botões Centralizados */}
         <div className="flex justify-center gap-4 mt-8 pt-4 border-t border-slate-100">
           <Button variant="secondary" onClick={handleLimpar} className="px-8 w-full md:w-auto">Limpar</Button>
           <Button variant="primary" onClick={handleRegistrar} disabled={invalido} className="px-8 w-full md:w-auto">Registrar</Button>
@@ -118,7 +129,6 @@ function Movimentacoes() {
                 <tr><td colSpan={5} className="px-6 py-8 text-center text-sm text-slate-400">Nenhum registro encontrado.</td></tr>
               ) : listaFiltrada.map((m) => (
                 <tr key={m.id} className="border-b hover:bg-slate-50 transition-colors">
-                  {/* Removido o "às 00:00", exibindo apenas a Data limpa */}
                   <td className="px-6 py-4 text-sm text-slate-600">{formatarData(m.created_at)}</td>
                   <td className="px-6 py-4 text-sm font-medium text-slate-900">{m.item_name}</td>
                   <td className="px-6 py-4">

@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Button, Input } from '../../components/ui';
+import { GlobalStateContext } from '../../contexts/GlobalStateContext';
 
-const MOTIVOS = ['Reposição Fornecedor', 'Venda Direta', 'Ajuste de Inventário', 'Avaria no Transporte', 'Projeto Interno', 'Outro'];
+const MOTIVOS = ['Reposição Fornecedor', 'Venda Direta', 'Avaria no Transporte', 'Projeto Interno', 'Outro'];
 
 export default function ModalMovimentacao({ isOpen, onClose, onRegistrar }) {
+  const { items } = useContext(GlobalStateContext);
+
   const [produto, setProduto] = useState('');
   const [operacao, setOperacao] = useState('IN');
   const [quantidade, setQtd] = useState('');
@@ -11,16 +14,19 @@ export default function ModalMovimentacao({ isOpen, onClose, onRegistrar }) {
 
   if (!isOpen) return null;
 
-  const invalido = !produto || !quantidade || !motivo;
+  const itemSelecionado = items.find(i => i.name === produto);
+  const estoqueInsuficiente = operacao === 'OUT' && itemSelecionado && Number(quantidade) > itemSelecionado.quantity;
+  const invalido = !produto || !quantidade || !motivo || estoqueInsuficiente || Number(quantidade) <= 0;
 
   const salvar = (e) => {
     e.preventDefault();
+    if (invalido) return;
+
     onRegistrar({
       item_name: produto,
       type: operacao,
       quantity: Number(quantidade),
       reason: motivo,
-      // Salva a data e hora de agora sem dar opção de escolha!
       created_at: new Date().toISOString()
     });
     setProduto(''); setQtd(''); setMotivo('');
@@ -36,18 +42,30 @@ export default function ModalMovimentacao({ isOpen, onClose, onRegistrar }) {
         </div>
         
         <div className="p-6 space-y-5">
-          <Input label="PRODUTO" required value={produto} onChange={(e) => setProduto(e.target.value)} placeholder="Ex: Monitor LG" />
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-gray-600 block">PRODUTO</label>
+            <select value={produto} onChange={(e) => setProduto(e.target.value)} className="h-11 w-full rounded-md border border-gray-300 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+              <option value="">Selecione um produto cadastrado...</option>
+              {items.map(i => (
+                <option key={i.id} value={i.name}>{i.name} (Estoque atual: {i.quantity})</option>
+              ))}
+            </select>
+          </div>
           
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-1">
               <label className="text-xs font-medium text-slate-600">OPERAÇÃO</label>
               <select value={operacao} onChange={(e) => setOperacao(e.target.value)} className="h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
-                <option value="IN">Entrada</option>
-                <option value="OUT">Saída</option>
-                <option value="ADJUSTMENT">Ajuste</option>
+                <option value="IN">Entrada (+)</option>
+                <option value="OUT">Saída (-)</option>
               </select>
             </div>
-            <Input label="QTD" type="number" min="1" required value={quantidade} onChange={(e) => setQtd(e.target.value)} />
+            <div className="flex flex-col gap-1">
+              <Input label="QUANTIDADE" type="number" min="1" required value={quantidade} onChange={(e) => setQtd(e.target.value)} />
+              {estoqueInsuficiente && (
+                <span className="text-[10px] text-red-500 font-bold">Estoque insuficiente para esta saída!</span>
+              )}
+            </div>
           </div>
 
           <div className="flex flex-col gap-1">

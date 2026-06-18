@@ -44,6 +44,14 @@ export const GlobalStateProvider = ({ children }) => {
   const addMovimentacao = (mov) => {
     setMovimentacoes(prev => [{ ...mov, id: Date.now() }, ...prev]);
     setNotificacoes(prev => [{ id: Date.now(), tipo: 'INFO', msg: `Nova movimentação: ${mov.item_name}`, lida: false }, ...prev]);
+    
+    setItems(prevItems => prevItems.map(item => {
+      if (item.name === mov.item_name) {
+        const novaQuantidade = mov.type === 'IN' ? item.quantity + mov.quantity : item.quantity - mov.quantity;
+        return { ...item, quantity: novaQuantidade };
+      }
+      return item;
+    }));
   };
 
   const addRelatorio = (rel) => {
