@@ -19,3 +19,9 @@ if not DATABASE_URL:
         "DATABASE_URL não está definido. Crie um arquivo .env com "
         "DATABASE_URL=sqlite:///./database.db"
     )
+
+if not SECRET_KEY:
+    raise RuntimeError(
+        "SECRET_KEY não está definido. Crie um arquivo .env com "
+        "SECRET_KEY=uma_chave_secreta_forte"
+    )
