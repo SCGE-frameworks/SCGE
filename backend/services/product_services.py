@@ -25,7 +25,7 @@ def create_product_service(product: ProductCreate, db: Session):
     db.commit()
     db.refresh(new_product)
 
-    return success_message("Product created successfully", data=new_product.to_dict())
+    return success_message("Product created successfully", data={"product": new_product.to_dict()})
 
 
 def update_product_service(product_id: int, product_data: ProductUpdate, db: Session):
@@ -75,7 +75,7 @@ def update_product_service(product_id: int, product_data: ProductUpdate, db: Ses
     db.commit()
     db.refresh(product)
 
-    return success_message("Product updated successfully", data=product.to_dict())
+    return success_message("Product updated successfully", data={"product": product.to_dict()})
 
 
 def delete_product_service(product_id: int, db: Session):
@@ -91,7 +91,7 @@ def delete_product_service(product_id: int, db: Session):
     db.commit()
     db.refresh(product)
 
-    return success_message("Product deactivated successfully", data=product.to_dict())
+    return success_message("Product deactivated successfully", data={"product": product.to_dict()})
 
 
 def list_products_service(db: Session):
@@ -110,4 +110,4 @@ def get_product_by_id_service(product_id: int, db: Session):
     if not product or not product.is_active:
         return error_message("Product not found", code="PRODUCT_NOT_FOUND", status_code=404)
 
-    return success_message("Product retrieved successfully", data=product.to_dict())
+    return success_message("Product retrieved successfully", data={"product": product.to_dict()})
