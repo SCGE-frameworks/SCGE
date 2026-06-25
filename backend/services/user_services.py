@@ -22,12 +22,10 @@ def _user_to_dict(user: User, db: Session) -> dict:
 def get_users_service(db: Session):
     users = db.query(User).filter(User.is_active.is_(True)).all()
 
-    if not users:
-        return error_message("No users found", code="USERS_NOT_FOUND", status_code=404)
-
-    users_data = [_user_to_dict(user, db) for user in users]
-
-    return success_message("Users retrieved successfully", data={"users": users_data})
+    return success_message(
+        "Users retrieved successfully",
+        data={"users": [_user_to_dict(user, db) for user in users]},
+    )
 
 
 def get_user_service(user_id: int, db: Session):

@@ -10,7 +10,7 @@ def auth_login(login_data: AuthRequest, db: Session):
     user = db.query(User).filter(User.email == login_data.email).first()
 
     if not user or not user.is_active:
-        return error_message("Invalid credentials", code="USER_NOT_FOUND", status_code=404)
+        return error_message("Invalid credentials", code="INVALID_CREDENTIALS", status_code=401)
 
     if not verify_password(login_data.password, user.password_hash):
         return error_message("Invalid credentials", code="INVALID_CREDENTIALS", status_code=401)
