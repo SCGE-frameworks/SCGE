@@ -25,7 +25,7 @@ O script faz **tudo** automaticamente:
 > A instalação de Node/Python usa `apt` e pode pedir a senha do `sudo`. Em
 > sistemas que não usam `apt`, instale Node 18+ e Python 3.11+ manualmente antes.
 
-**Acesse no navegador:**
+**Acesse no navegador** (o terminal exibe links clicáveis ao final do `start.sh`):
 
 | Recurso | URL |
 |---------|-----|
