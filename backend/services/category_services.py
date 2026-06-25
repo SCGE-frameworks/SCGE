@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
 from core import error_message, success_message
-from models import Category
+from models import Category, Product
 from schemas import CategoryCreate, CategoryUpdate
 
 
@@ -95,6 +95,15 @@ def delete_category_service(category_id: int, db: Session):
 
     if not category.is_active:
         return error_message("Category is already inactive", code="CATEGORY_ALREADY_INACTIVE", status_code=400)
+
+    active_products = (
+        db.query(Product)
+        .filter(Product.is_active.is_(True), Product.category_id == category.id)
+        .count()
+    )
+
+    if active_products > 0:
+        return error_message("Category can't be deactivated because it has active products", code="CATEGORY_HAS_PRODUCTS", status_code=400)
 
     category.is_active = False
     db.commit()

@@ -8,8 +8,13 @@ from schemas import ProductCreate, ProductUpdate
 def create_product_service(product: ProductCreate, db: Session):
     if not db.query(Category).filter(Category.id == product.category_id, Category.is_active.is_(True)).first():
         return error_message("Invalid category", code="INVALID_CATEGORY", status_code=400)
+        
+    duplicate_name = db.query(Product).filter(Product.name == product.name).first()
+    if duplicate_name:
+        return error_message("Product name already exists", code="NAME_IN_USE", status_code=400)
 
-    if db.query(Product).filter(Product.code == product.code).first():
+    duplicate_code = db.query(Product).filter(Product.code == product.code).first()
+    if duplicate_code:
         return error_message("Product code already exists", code="CODE_IN_USE", status_code=400)
 
     new_product = Product(
@@ -37,32 +42,46 @@ def update_product_service(product_id: int, product_data: ProductUpdate, db: Ses
     if not product.is_active:
         return error_message("Product is inactive", code="PRODUCT_INACTIVE", status_code=400)
 
-    if all(
-        value is None
-        for value in (
-            product_data.name,
-            product_data.code,
-            product_data.quantity,
-            product_data.unit_of_measure,
-            product_data.minimum_stock,
-            product_data.category_id,
-            product_data.is_active,
-        )
+    if (
+        product_data.name is None
+        and product_data.code is None
+        and product_data.quantity is None
+        and product_data.unit_of_measure is None
+        and product_data.minimum_stock is None
+        and product_data.category_id is None
+        and product_data.is_active is None
     ):
         return error_message("No update data provided", code="NO_UPDATE_DATA", status_code=422)
 
     if product_data.category_id is not None:
-        if not db.query(Category).filter(Category.id == product_data.category_id, Category.is_active.is_(True)).first():
+        category = db.query(Category).filter(
+            Category.id == product_data.category_id,
+            Category.is_active.is_(True),
+        ).first()
+        if not category:
             return error_message("Invalid category", code="INVALID_CATEGORY", status_code=400)
         product.category_id = product_data.category_id
 
-    if product_data.code is not None and product_data.code != product.code:
-        if db.query(Product).filter(Product.code == product_data.code, Product.id != product_id).first():
+    if product_data.name is not None:
+        name_taken = (
+            db.query(Product)
+            .filter(Product.name == product_data.name, Product.id != product_id)
+            .first()
+        )
+        if name_taken:
+            return error_message("Product name already exists", code="NAME_IN_USE", status_code=400)
+        product.name = product_data.name
+
+    if product_data.code is not None:
+        code_taken = (
+            db.query(Product)
+            .filter(Product.code == product_data.code, Product.id != product_id)
+            .first()
+        )
+        if code_taken:
             return error_message("Product code already exists", code="CODE_IN_USE", status_code=400)
         product.code = product_data.code
 
-    if product_data.name is not None:
-        product.name = product_data.name
     if product_data.quantity is not None:
         product.quantity = product_data.quantity
     if product_data.unit_of_measure is not None:

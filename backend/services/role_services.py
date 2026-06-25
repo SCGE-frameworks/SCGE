@@ -1,5 +1,5 @@
 from fastapi import Depends
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, query
 
 from core import error_message, get_current_user, success_message
 from database import get_db
@@ -85,6 +85,15 @@ def role_delete_service(role_id: int, db: Session):
 
     if not role.is_active:
         return error_message("Role is already inactive", code="ROLE_ALREADY_INACTIVE", status_code=400)
+
+    active_users_count = (
+        db.query(User)
+        .filter(User.role_id == role.id, User.is_active.is_(True)
+        ).count()
+    )
+    
+    if not active_users_count > 0:
+        return error_message("Role can't be deactivated because it has active users", code="ROLE_HAS_USERS", status_code=400)
 
     role.is_active = False
     db.commit()
