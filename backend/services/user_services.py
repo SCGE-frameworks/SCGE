@@ -19,6 +19,24 @@ def _user_to_dict(user: User, db: Session) -> dict:
     return user.to_dict(role_name=role_name, access_level=access_level)
 
 
+def _count_active_admin_users(db: Session) -> int:
+    return (
+        db.query(User)
+        .join(Role, User.role_id == Role.id)
+        .filter(
+            User.is_active.is_(True),
+            Role.access_level == AccessLevels.ADMIN,
+            Role.is_active.is_(True),
+        )
+        .count()
+    )
+
+
+def _is_admin_user(db: Session, user: User) -> bool:
+    role = db.query(Role).filter(Role.id == user.role_id, Role.is_active.is_(True)).first()
+    return role is not None and role.access_level == AccessLevels.ADMIN
+
+
 def get_users_service(db: Session):
     users = db.query(User).filter(User.is_active.is_(True)).all()
 
@@ -75,7 +93,14 @@ def update_user_service(user_id: int, data: UserUpdate, db: Session):
         if db.query(User).filter(User.email == data.email).first():
             return error_message("Email already registered", code="EMAIL_IN_USE", status_code=400)
 
-    if data.role_id is not None:
+    if data.role_id is not None and data.role_id != user.role_id:
+        if _is_admin_user(db, user) and _count_active_admin_users(db) <= 1:
+            return error_message(
+                "Cannot change role of the last admin user",
+                code="LAST_ADMIN_USER",
+                status_code=400,
+            )
+
         if not db.query(Role).filter(Role.id == data.role_id, Role.is_active.is_(True)).first():
             return error_message("Invalid role", code="INVALID_ROLE", status_code=400)
         user.role_id = data.role_id
@@ -106,19 +131,8 @@ def delete_user_service(user_id: int, db: Session):
     if not user_role:
         return error_message("User role not found", code="USER_ROLE_NOT_FOUND", status_code=404)
 
-    if user_role.access_level == AccessLevels.ADMIN:
-        admin_users_count = (
-            db.query(User)
-            .join(Role, User.role_id == Role.id)
-            .filter(
-                User.is_active.is_(True),
-                Role.access_level == AccessLevels.ADMIN,
-                Role.is_active.is_(True)
-            )
-        ).count()
-
-        if admin_users_count <= 1:
-            return error_message("Cannot delete the last admin user", code="LAST_ADMIN_USER", status_code=400)
+    if user_role.access_level == AccessLevels.ADMIN and _count_active_admin_users(db) <= 1:
+        return error_message("Cannot delete the last admin user", code="LAST_ADMIN_USER", status_code=400)
 
     user.is_active = False
     db.commit()

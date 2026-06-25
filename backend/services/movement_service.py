@@ -22,7 +22,7 @@ def get_movement_by_id_service(movement_id: int, db: Session):
     if not movement:
         return error_message("Movement not found", code="MOVEMENT_NOT_FOUND", status_code=404)
 
-    return success_message("Movement retrieved successfully", data=movement.to_dict())
+    return success_message("Movement retrieved successfully", data={"movement": movement.to_dict()})
 
 
 def _get_active_product(db: Session, product_id: int):
@@ -74,9 +74,12 @@ def _create_movement(
     return success_message(
         "Movement registered successfully",
         data={
-            "movement_id": movement.id,
-            "product_id": product.id,
-            "current_quantity": product.quantity,
+            "movement": movement.to_dict(),
+            "product": {
+                "id": product.id,
+                "current_quantity": product.quantity,
+                "low_stock": product.quantity <= product.minimum_stock,
+            },
         },
     )
 
