@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from backend.core.security import require_min_access_level
+from core import require_min_access_level
 from models import AccessLevels, User
 from core import get_current_user
 from database import get_db

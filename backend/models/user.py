@@ -1,3 +1,5 @@
+from typing import Optional
+
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 
 from database import Base
@@ -15,8 +17,8 @@ class User(Base):
 
     def to_dict(
         self,
-        role_name: str | None = None,
-        access_level: int | None = None,
+        role_name: Optional[str] = None,
+        access_level: Optional[int] = None,
     ) -> dict:
         data = {
             "id": self.id,
