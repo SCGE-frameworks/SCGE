@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from database import create_initial_seed
 from core.config import CORS_ORIGINS
-from database import Base, SessionLocal, engine, get_db
+from database import Base, SessionLocal, engine
 from routes import (
     auth_router,
     categories_router,

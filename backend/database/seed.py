@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from core import hash_password, success_message
+from core import hash_password
 from models import AccessLevels, Role, User
 
 
