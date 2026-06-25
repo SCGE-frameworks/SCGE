@@ -158,9 +158,9 @@ Ana Laura Martins · Caio Victor Santos Valentim · Diogo Queiroz da Silva · Di
 
 ## Desenvolvimento
 
-- Branch principal: `develop` · Estável: `master`
-- Commits: `feat(front-XX): descrição`, `fix(back-XX): descrição`
-- Documentação da API: `docs/backend-routes-access.md`
+- Branch principal: `master` · Estável: `master`
+- Commits: `feat: descrição`, `fix: descrição`
+- Documentação da API: `README.md`
 - Não commitar `.env`, `.venv`, `node_modules`, `dist` nem `scge.db`
 
 ---
