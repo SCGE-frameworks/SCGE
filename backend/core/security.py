@@ -6,8 +6,8 @@ from fastapi.security import HTTPBearer
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
-from backend.core import error_message
-from backend.models.role import AccessLevels
+from core import error_message
+from models.role import AccessLevels
 from database import get_db
 from models import Role, User
 from core.config import ACCESS_TOKEN_EXPIRE_MINUTES, ALGORITHM, SECRET_KEY
@@ -92,5 +92,4 @@ def require_min_access_level(min_level: AccessLevels):
         return current_user
 
     return checker
-
 

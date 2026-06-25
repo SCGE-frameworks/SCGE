@@ -1,6 +1,6 @@
 # Mapeamento de rotas e níveis de acesso — SCGE API
 
-Referência para implementar e revisar o controle de acesso do backend.
+Referência para implementar e revisar o controle de acesso da API.
 
 **Base URL:** `http://127.0.0.1:8000`  
 **Autenticação:** JWT no header `Authorization: Bearer <token>`

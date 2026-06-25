@@ -102,7 +102,7 @@ Em `core/config.py`:
 
 ---
 
-### 3.2 Imports inconsistentes (`backend.*` vs `core.*`)
+### 3.2 Imports inconsistentes (`core.*` vs imports locais)
 
 **Problema:** o README manda rodar com `cd backend && uvicorn app:app`. Nesse modo, `backend` **não é pacote Python** (não há `backend/__init__.py` na raiz do módulo como pacote instalável).
 
@@ -110,9 +110,9 @@ Arquivos com imports problemáticos:
 
 | Arquivo | Import | Risco |
 |---------|--------|-------|
-| `core/security.py` | `from backend.core import error_message` | `ModuleNotFoundError` |
-| `core/security.py` | `from backend.models.role import AccessLevels` | `ModuleNotFoundError` |
-| `routes/user_routes.py` | `from backend.core.security import require_min_access_level` | Inconsistente com demais rotas |
+| `core/security.py` | `from core import error_message` | Import corrigido |
+| `core/security.py` | `from models.role import AccessLevels` | Import corrigido |
+| `routes/user_routes.py` | `from core import require_min_access_level` | Consistente com demais rotas |
 
 Demais arquivos usam `from core import ...` e `from models import ...` — padrão correto para execução em `backend/`.
 
@@ -121,7 +121,7 @@ Demais arquivos usam `from core import ...` e `from models import ...` — padr�
 - Padronizar **100%** para imports relativos ao cwd `backend/`:
   - `from core import ...`
   - `from models import AccessLevels, ...`
-- Remover todos os `from backend.*`.
+- Remover todos os imports com prefixo do pacote raiz antigo.
 
 **Prioridade:** 🔴 Crítica (pode impedir subida da API)
 
@@ -270,7 +270,7 @@ Comportamento **inconsistente** para listas vazias:
 
 **Duplicação:** `report_routes` aplica `require_min_access_level(VIEWER)` no router **e** na rota.
 
-**Import inconsistente:** `user_routes.py` usa `backend.core.security`; demais usam `from core import require_min_access_level`.
+**Import inconsistente:** `user_routes.py` usava o prefixo do pacote raiz antigo; demais usam `from core import require_min_access_level`.
 
 ---
 
@@ -397,7 +397,7 @@ Decidir: manter só `/users` (admin) ou documentar diferença de propósito.
 |------|----------------|-----------------|
 | Arquivo de service | `movement_service.py` (singular) | `movement_services.py` (plural, como os outros) |
 | Nome de handler em product routes | `get_product_by_id` | `get_product` (como category) |
-| Imports em routes | Mistura `core` e `backend.core` | Sempre `from core import ...` |
+| Imports em routes | Mistura de estilos de import | Sempre `from core import ...` |
 | Resposta de movimentação | `{ movement_id, product_id, current_quantity }` | Documentar ou alinhar com `Movement.to_dict()` |
 | Enum | `AccessLevels` (plural) | Aceitável; alternativa comum: `AccessLevel` (singular) |
 
@@ -408,7 +408,7 @@ Decidir: manter só `/users` (admin) ou documentar diferença de propósito.
 ### 🔴 Prioridade 1 — Bloqueadores (fazer primeiro)
 
 - [ ] **Seed / bootstrap:** cargos padrão + usuário admin inicial
-- [ ] **Corrigir imports** em `core/security.py` e `routes/user_routes.py` (remover `backend.*`)
+- [ ] **Corrigir imports** em `core/security.py` e `routes/user_routes.py` (remover prefixo do pacote raiz antigo)
 - [ ] **Corrigir `require_min_access_level`:** `HTTPException` quando role ausente; checar `role.is_active`
 - [ ] **Unificar nome do banco** (`scge.db`) em config, `.env.example` e README
 

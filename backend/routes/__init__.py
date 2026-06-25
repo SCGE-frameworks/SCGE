@@ -11,6 +11,7 @@ __all__ = [
     "categories_router",
     "movements_router",
     "products_router",
+    "reports_router",
     "roles_router",
     "users_router",
 ]
