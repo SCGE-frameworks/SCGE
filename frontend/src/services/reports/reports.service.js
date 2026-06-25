@@ -1,28 +1,72 @@
-import { listarItens } from '../items';
-import { listarMovimentacoes } from '../movements';
+import { apiRequest } from '../api';
+import { listarMovimentacoesApi } from '../movements/movements.api';
+import { listarProdutosApi } from '../items/items.service';
 
-export const obterKpisDashboard = () => {
-  const items = listarItens();
-  const movements = listarMovimentacoes();
+function mapProductFromApi(product) {
   return {
-    total_itens: items.length,
-    abaixo_minimo: items.filter((i) => i.quantity < i.min_quantity).length,
-    movimentacoes_hoje: movements.length,
+    id: product.id,
+    sku: product.code,
+    name: product.name,
+    category_id: product.category_id,
+    quantity: product.quantity,
+    min_quantity: product.minimum_stock,
+    unit: product.unit_of_measure,
+    low_stock: product.low_stock,
   };
-};
+}
 
-export const obterAtividadesRecentes = () => listarMovimentacoes();
+export async function obterRelatorioEstoqueBaixoApi() {
+  const response = await apiRequest('/reports/low-stock');
+  const products = response.data?.products ?? [];
 
-export const obterMovimentacaoSemanal = () => [
-  { dia: 'SEG', entradas: 10, saidas: 5 },
-  { dia: 'TER', entradas: 8,  saidas: 7 },
-  { dia: 'QUA', entradas: 15, saidas: 4 },
-  { dia: 'QUI', entradas: 12, saidas: 6 },
-  { dia: 'SEX', entradas: 20, saidas: 8 },
-];
+  return products.map(mapProductFromApi);
+}
 
-export const obterItensParaRepor = () =>
-  listarItens().filter((item) => item.quantity <= item.min_quantity);
+export async function obterKpisDashboardApi() {
+  const products = await listarProdutosApi();
+  const movements = await listarMovimentacoesApi(products);
 
-export const obterEstoqueParado = () =>
-  listarItens().filter((item) => item.is_stagnant);
+  const hoje = new Date().toDateString();
+
+  return {
+    total_itens: products.length,
+    abaixo_minimo: products.filter((item) => item.low_stock).length,
+    movimentacoes_hoje: movements.filter(
+      (movement) => new Date(movement.created_at).toDateString() === hoje,
+    ).length,
+  };
+}
+
+export async function obterAtividadesRecentesApi() {
+  const products = await listarProdutosApi();
+  const movements = await listarMovimentacoesApi(products);
+
+  return movements.slice(0, 5);
+}
+
+export async function obterItensParaReporApi() {
+  return obterRelatorioEstoqueBaixoApi();
+}
+
+export function exportarCsvEstoqueBaixo(produtos) {
+  const header = ['Código', 'Nome', 'Quantidade', 'Estoque Mínimo', 'Unidade'];
+  const rows = produtos.map((item) => [
+    item.sku,
+    item.name,
+    item.quantity,
+    item.min_quantity,
+    item.unit,
+  ]);
+
+  const csv = [header, ...rows]
+    .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+    .join('\n');
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `scge-estoque-baixo-${new Date().toISOString().slice(0, 10)}.csv`;
+  link.click();
+  URL.revokeObjectURL(url);
+}

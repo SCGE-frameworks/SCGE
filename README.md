@@ -1,99 +1,166 @@
-# SCGE - Sistema de Controle e Gestao de Estoque
+# SCGE — Sistema de Controle e Gestão de Estoque
 
-O **SCGE** e uma aplicacao para registro, controle e acompanhamento de estoque, com foco em reduzir perdas operacionais, evitar rupturas e melhorar a visibilidade das movimentacoes.
-
-## Objetivo do projeto
-
-Centralizar o gerenciamento de inventario em uma solucao moderna, organizada e escalavel, substituindo processos manuais sujeitos a erro.
-
-## Status atual
-
-Este repositorio contem o backend em **FastAPI** com rotas iniciais para:
-
-- autenticacao (`/auth`)
-- usuarios (`/users`)
-- itens (`/items`)
-
-As rotas atuais estao em formato base (MVP inicial), com respostas de exemplo para evolucao incremental.
-
-## Tecnologias
-
-### Backend
-
-- Python
-- FastAPI
-- Estrutura em camadas para evolucao de API REST
-
-### Frontend (planejado)
-
-- React
-- [Figma](https://www.figma.com/file/axawXFROpTsEGqkq5cjCMz?node-id=3:18&locale=pt-br&type=design)
-
-### Banco de dados (planejado)
-
-- PostgreSQL
-
-### Gestao e processo
-
-- Trello
-- Metodologia agil
-
-## Como executar localmente
-
-### 1) Pre-requisitos
-
-- Python 3.10+ recomendado
-- `pip`
-
-### 2) Criar ambiente virtual
-
-```bash
-python -m venv .venv
-source .venv/bin/activate
-```
-
-### 3) Instalar dependencias
-
-> Se ainda nao existir `requirements.txt`, instale ao menos:
-
-```bash
-pip install fastapi uvicorn
-```
-
-### 4) Iniciar servidor
-
-```bash
-uvicorn app:app --reload
-```
-
-API disponivel em:
-
-- `http://127.0.0.1:8000`
-- Documentacao Swagger: `http://127.0.0.1:8000/docs`
-- Documentacao ReDoc: `http://127.0.0.1:8000/redoc`
-
-## Funcionalidades previstas (MVP)
-
-- Cadastro e gestao de usuarios (com perfil e permissao)
-- Cadastro e controle de itens em estoque
-- Registro de entradas e saidas
-- Alertas de estoque minimo
-- Relatorios para apoio a decisao
-- Filtros por nome, codigo e categoria
-
-## Equipe de desenvolvimento
-
-- Ana Laura Martins
-- Caio Victor Santos Valentim
-- Diogo Queiroz da Silva
-- Dirceu Alves Neto
-- Fernando Tinno Venceslau
-- Gabriel Correa de A. Guanais
-- Hudson Batista Brandao
-- Inacio Ribeiro Azevedo
-- Joao Victor Carrenho Alves
-- Paulo Henrique R. Rebello
+Aplicação web full stack para controle de estoque, desenvolvida no **IFMS — Campus Três Lagoas**.
 
 ---
 
-Tres Lagoas - MS | 2026
+## Como rodar o sistema
+
+### Forma recomendada — um único comando (Linux/Ubuntu)
+
+**Pré-requisitos:** `python3` (3.11+), `python3-venv`, `node` (18+) e `npm`.
+
+```bash
+git clone <url-do-repositorio>
+cd SCGE
+bash start.sh
+```
+
+O script faz tudo automaticamente:
+
+1. Cria o ambiente virtual do backend e instala as dependências Python
+2. Gera o arquivo `backend/.env` (se ainda não existir)
+3. Instala as dependências do frontend e gera o build de produção
+4. Sobe a aplicação completa na porta **8000**
+
+**Acesse no navegador:**
+
+| Recurso | URL |
+|---------|-----|
+| Sistema (interface) | http://localhost:8000 |
+| API (Swagger) | http://localhost:8000/docs |
+
+**Login padrão** (criado automaticamente no primeiro start):
+
+| Campo | Valor |
+|-------|-------|
+| E-mail | `admin@scge.com` |
+| Senha | `admin@123` |
+
+Para encerrar: `CTRL+C` no terminal.
+
+> Nesse modo o backend serve a interface já compilada. Não é necessário subir dois servidores nem configurar CORS.
+
+---
+
+### Modo desenvolvimento — dois terminais
+
+Use quando for alterar código do frontend ou do backend com hot-reload.
+
+**Terminal 1 — Backend**
+
+```bash
+cd backend
+python3 -m venv .venv
+source .venv/bin/activate          # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+cp .env.example .env                 # Windows: copy .env.example .env
+python -m uvicorn app:app --reload
+```
+
+**Terminal 2 — Frontend**
+
+```bash
+cd frontend
+npm install
+cp .env.example .env                 # Windows: copy .env.example .env
+npm run dev
+```
+
+| Recurso | URL |
+|---------|-----|
+| Interface (dev) | http://localhost:5173 |
+| API | http://127.0.0.1:8000 |
+| Swagger | http://127.0.0.1:8000/docs |
+
+---
+
+### Primeiro uso — fluxo rápido de teste
+
+Depois de rodar o sistema e fazer login como admin:
+
+1. **Estoque** → **Categorias** → crie uma categoria (ex.: Bebidas)
+2. **Estoque** → **Novo Produto** → cadastre um produto na categoria criada
+3. **Movimentações** → registre uma entrada, saída ou perda
+4. **Dashboard** → confira KPIs e alertas
+5. **Relatórios** → veja estoque baixo e exporte CSV
+6. **Administração** → crie usuários e perfis de acesso
+
+---
+
+### Problemas comuns
+
+| Sintoma | Solução |
+|---------|---------|
+| `Failed to fetch` no login | Confirme que o backend está rodando (`http://127.0.0.1:8000/docs` deve abrir) |
+| Porta 8000 ocupada | Encerre o processo anterior ou use outra porta no uvicorn |
+| Porta 5173 ocupada (modo dev) | Encerre o Vite antigo antes de rodar `npm run dev` |
+| Erro de schema no banco | Delete `backend/scge.db` e reinicie o backend (o seed recria os dados) |
+| `python3-venv` não encontrado | `sudo apt install -y python3-venv` (Ubuntu) |
+
+---
+
+## Sobre o projeto
+
+O SCGE centraliza inventário, movimentações, relatórios e gestão de usuários com controle de acesso por perfis (RBAC). O backend expõe uma API REST com JWT; o frontend React consome essa API com interface em português.
+
+**Protótipo Figma:** [Sistema de Estoque](https://www.figma.com/design/axawXFROpTsEGqkq5cjCMz/Sistema-de-Estoque?node-id=3-180)
+
+### Funcionalidades
+
+- Autenticação (login, recuperação e redefinição de senha)
+- Dashboard com KPIs, alertas e atividades recentes
+- Inventário — produtos e categorias
+- Movimentações (entrada, saída e perda)
+- Relatório de estoque baixo com exportação CSV
+- Gestão de usuários e perfis de acesso (admin)
+
+### Níveis de acesso
+
+| Nível | Perfil | Permissões |
+|-------|--------|------------|
+| 1 | Consulta | Visualizar telas |
+| 2 | Operador | Registrar movimentações |
+| 3 | Gerente | CRUD de produtos e categorias |
+| 4 | Administrador | Usuários e perfis |
+
+---
+
+## Tecnologias
+
+| Camada | Stack |
+|--------|-------|
+| Frontend | React 19, Vite, Tailwind CSS, React Router |
+| Backend | Python, FastAPI, SQLAlchemy, Pydantic, Uvicorn, SQLite |
+
+---
+
+## Estrutura do repositório
+
+```text
+SCGE/
+├── start.sh          # Setup + execução em um comando (Linux)
+├── backend/          # API FastAPI (serve o build do frontend)
+├── frontend/         # App React
+├── docs/             # Documentação técnica
+└── README.md
+```
+
+---
+
+## Equipe
+
+Ana Laura Martins · Caio Victor Santos Valentim · Diogo Queiroz da Silva · Dirceu Alves Neto · Eduardo Melo Perucci · Fernando Tinno Venceslau · Gabriel Correa de A. Guanais · Hideki Wakui · Hudson Batista Brandão · Inácio Ribeiro Azevedo · João Victor Carrenho Alves · Paulo Henrique R. Rebello
+
+---
+
+## Desenvolvimento
+
+- Branch principal: `develop` · Estável: `master`
+- Commits: `feat(front-XX): descrição`, `fix(back-XX): descrição`
+- Documentação da API: `docs/backend-routes-access.md`
+- Não commitar `.env`, `.venv`, `node_modules`, `dist` nem `scge.db`
+
+---
+
+**IFMS — Campus Três Lagoas · MS · 2026**

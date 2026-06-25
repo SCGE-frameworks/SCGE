@@ -1,24 +1,82 @@
-import React, { useState } from 'react';
-import ModalProduto from '../Inventario/ModalProduto'; // Ajuste o caminho se necessário
-import ModalRelatorio from '../Relatorios/ModalRelatorio';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { ACCESS_LEVEL } from '../../constants/accessLevels';
+import { useAuth } from '../../contexts';
+import {
+  listarCategoriasApi,
+  criarProdutoApi,
+  obterAtividadesRecentesApi,
+  obterItensParaReporApi,
+  obterKpisDashboardApi,
+  listarProdutosApi,
+} from '../../services';
+import ModalProduto from '../Inventario/ModalProduto';
 
-const mockAtividades = [
-  { id: 1, tipo: 'ENTRADA DE ATIVO', descricao: 'Item A', data: '12/05/2026', valor: '+10 un' },
-  { id: 2, tipo: 'SAÍDA DE ATIVO', descricao: 'Item B', data: '12/05/2026', valor: '-2 un' },
-  { id: 3, tipo: 'AJUSTE DE ATIVO', descricao: 'Item C', data: '11/05/2026', valor: '0' }
-];
+const TIPO_LABEL = {
+  IN: 'ENTRADA',
+  OUT: 'SAÍDA',
+  ADJUSTMENT: 'PERDA',
+};
 
 export default function Dashboard() {
-  // ESTADOS PARA CONTROLE DOS MODAIS
-  const [modalProdutoAberto, setModalProdutoAberto] = useState(false);
-  const [modalRelatorioAberto, setModalRelatorioAberto] = useState(false);
+  const navigate = useNavigate();
+  const { hasAccess } = useAuth();
+  const canManageProducts = hasAccess(ACCESS_LEVEL.MANAGER);
 
-  // Categorias mockadas para passar aos modais
-  const categoriasMock = [
-    { id: 1, name: 'Categoria A' },
-    { id: 2, name: 'Categoria B' },
-    { id: 3, name: 'Categoria C' }
-  ];
+  const [modalProdutoAberto, setModalProdutoAberto] = useState(false);
+  const [categorias, setCategorias] = useState([]);
+  const [kpis, setKpis] = useState({ total_itens: 0, abaixo_minimo: 0, movimentacoes_hoje: 0 });
+  const [atividades, setAtividades] = useState([]);
+  const [itensAlerta, setItensAlerta] = useState([]);
+  const [categoriasChart, setCategoriasChart] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  useEffect(() => {
+    async function carregar() {
+      setLoading(true);
+      setErrorMessage('');
+
+      try {
+        const [kpiData, atividadesData, alertaData, categoriasData, produtos] = await Promise.all([
+          obterKpisDashboardApi(),
+          obterAtividadesRecentesApi(),
+          obterItensParaReporApi(),
+          listarCategoriasApi(),
+          listarProdutosApi(),
+        ]);
+
+        setKpis(kpiData);
+        setAtividades(atividadesData);
+        setItensAlerta(alertaData.slice(0, 5));
+        setCategorias(categoriasData);
+
+        const contagemPorCategoria = categoriasData.map((categoria) => ({
+          name: categoria.name,
+          total: produtos.filter((p) => p.category_id === categoria.id).length,
+        }));
+        const maxTotal = Math.max(...contagemPorCategoria.map((c) => c.total), 1);
+        setCategoriasChart(
+          contagemPorCategoria.map((item) => ({
+            ...item,
+            height: Math.round((item.total / maxTotal) * 100),
+          })),
+        );
+      } catch (error) {
+        setErrorMessage(error?.message || 'Não foi possível carregar o dashboard.');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    carregar();
+  }, []);
+
+  async function salvarProduto(produto) {
+    await criarProdutoApi(produto);
+    setModalProdutoAberto(false);
+    window.location.reload();
+  }
 
   return (
     <div className="p-8 bg-slate-50 min-h-screen font-sans">
@@ -27,27 +85,31 @@ export default function Dashboard() {
         <p className="text-slate-500">Visão geral do inventário e movimentações</p>
       </header>
 
-      {/* Grid de KPIs */}
+      {errorMessage && (
+        <div role="alert" className="mb-6 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {errorMessage}
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-10 h-10 rounded-full bg-brand-50 flex items-center justify-center text-brand-500">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
             </div>
-            <h3 className="text-sm font-medium text-slate-500">Total de Ativos</h3>
+            <h3 className="text-sm font-medium text-slate-500">Total de Produtos</h3>
           </div>
-          <p className="text-3xl font-bold text-gray-900">1.284</p>
-          <p className="text-xs text-green-600 font-medium mt-1">+12% este mês</p>
+          <p className="text-3xl font-bold text-gray-900">{loading ? '—' : kpis.total_itens}</p>
         </div>
-        
+
         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-green-600">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
             </div>
-            <h3 className="text-sm font-medium text-slate-500">Valor do Inventário</h3>
+            <h3 className="text-sm font-medium text-slate-500">Movimentações Hoje</h3>
           </div>
-          <p className="text-3xl font-bold text-gray-900">R$ 145.200</p>
+          <p className="text-3xl font-bold text-gray-900">{loading ? '—' : kpis.movimentacoes_hoje}</p>
         </div>
 
         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
@@ -57,7 +119,7 @@ export default function Dashboard() {
             </div>
             <h3 className="text-sm font-medium text-slate-500">Itens em Baixa</h3>
           </div>
-          <p className="text-3xl font-bold text-gray-900">23</p>
+          <p className="text-3xl font-bold text-gray-900">{loading ? '—' : kpis.abaixo_minimo}</p>
           <p className="text-xs text-slate-500 mt-1">Requerem atenção</p>
         </div>
       </div>
@@ -65,36 +127,48 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">
           <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-6 font-title">Movimentações por Categoria</h2>
-            <div className="h-64 flex items-end justify-between gap-2 pb-6 border-b border-slate-100">
-              {[40, 70, 45, 90, 60, 30, 80].map((height, i) => (
-                <div key={i} className="w-1/6 bg-brand-500 rounded-t-md relative" style={{ height: `${height}%` }}>
-                  <div className="absolute -top-7 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs font-bold py-1 px-2 rounded">{height}</div>
+            <h2 className="text-lg font-semibold text-gray-900 mb-6 font-title">Produtos por Categoria</h2>
+            {categoriasChart.length === 0 ? (
+              <p className="text-sm text-slate-500">Nenhum dado disponível.</p>
+            ) : (
+              <>
+                <div className="h-64 flex items-end justify-between gap-2 pb-6 border-b border-slate-100">
+                  {categoriasChart.map((item) => (
+                    <div key={item.name} className="flex-1 bg-brand-500 rounded-t-md relative" style={{ height: `${Math.max(item.height, 8)}%` }}>
+                      <div className="absolute -top-7 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs font-bold py-1 px-2 rounded">{item.total}</div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-            <div className="flex justify-between mt-4 text-xs text-slate-400 font-medium px-2">
-              <span>Categoria A</span><span>Categoria B</span><span>Categoria C</span><span>Categoria D</span><span>Categoria E</span><span>Categoria F</span><span>Categoria G</span>
-            </div>
+                <div className="flex justify-between mt-4 text-xs text-slate-400 font-medium px-2 gap-2">
+                  {categoriasChart.map((item) => (
+                    <span key={item.name} className="truncate text-center flex-1">{item.name}</span>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
 
           <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-lg font-semibold text-gray-900 font-title">Atividades Recentes</h2>
-              <button className="text-brand-500 hover:text-brand-600 text-sm font-medium">Ver todas</button>
+              <Link to="/movimentacoes" className="text-brand-500 hover:text-brand-600 text-sm font-medium">Ver todas</Link>
             </div>
             <div className="space-y-4">
-              {mockAtividades.map((atividade) => (
+              {atividades.length === 0 ? (
+                <p className="text-sm text-slate-500">Nenhuma movimentação registrada.</p>
+              ) : atividades.map((atividade) => (
                 <div key={atividade.id} className="flex items-center justify-between py-3 border-b border-slate-50 last:border-0">
                   <div className="flex items-center gap-4">
-                    <div className={`w-2 h-2 rounded-full ${atividade.tipo.includes('ENTRADA') ? 'bg-green-500' : atividade.tipo.includes('SAÍDA') ? 'bg-red-500' : 'bg-slate-400'}`}></div>
+                    <div className={`w-2 h-2 rounded-full ${atividade.type === 'IN' ? 'bg-green-500' : atividade.type === 'OUT' ? 'bg-red-500' : 'bg-amber-500'}`}></div>
                     <div>
-                      <p className="text-sm font-medium text-gray-900">{atividade.descricao}</p>
-                      <p className="text-xs text-slate-500">{atividade.tipo} • {atividade.data}</p>
+                      <p className="text-sm font-medium text-gray-900">{atividade.item_name}</p>
+                      <p className="text-xs text-slate-500">
+                        {TIPO_LABEL[atividade.type] ?? atividade.type} • {new Date(atividade.created_at).toLocaleDateString('pt-BR')}
+                      </p>
                     </div>
                   </div>
-                  <span className={`text-sm font-bold ${atividade.tipo.includes('ENTRADA') ? 'text-green-600' : atividade.tipo.includes('SAÍDA') ? 'text-red-600' : 'text-slate-600'}`}>
-                    {atividade.valor}
+                  <span className={`text-sm font-bold ${atividade.type === 'IN' ? 'text-green-600' : atividade.type === 'OUT' ? 'text-red-600' : 'text-amber-600'}`}>
+                    {atividade.type === 'IN' ? '+' : atividade.type === 'OUT' ? '-' : ''}{atividade.quantity} un
                   </span>
                 </div>
               ))}
@@ -103,57 +177,64 @@ export default function Dashboard() {
         </div>
 
         <div className="space-y-8">
-          {/* AÇÕES RÁPIDAS COM MODAIS INTEGRADOS */}
           <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4 font-title">Ações Rápidas</h2>
             <div className="grid grid-cols-2 gap-4">
-              <button 
-                onClick={() => setModalProdutoAberto(true)}
-                className="flex flex-col items-center justify-center p-4 rounded-lg bg-brand-50 hover:bg-brand-100 text-brand-600 transition-colors border border-brand-100"
+              {canManageProducts && (
+                <button
+                  type="button"
+                  onClick={() => setModalProdutoAberto(true)}
+                  className="flex flex-col items-center justify-center p-4 rounded-lg bg-brand-50 hover:bg-brand-100 text-brand-600 transition-colors border border-brand-100"
+                >
+                  <svg className="w-6 h-6 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path></svg>
+                  <span className="text-sm font-medium">Novo Produto</span>
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => navigate('/movimentacoes')}
+                className="flex flex-col items-center justify-center p-4 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-600 transition-colors border border-slate-200"
               >
-                <svg className="w-6 h-6 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path></svg>
-                <span className="text-sm font-medium">Novo Produto</span>
-              </button>
-              <button className="flex flex-col items-center justify-center p-4 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-600 transition-colors border border-slate-200">
                 <svg className="w-6 h-6 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
                 <span className="text-sm font-medium">Movimentar</span>
               </button>
-              <button 
-                onClick={() => setModalRelatorioAberto(true)}
+              <button
+                type="button"
+                onClick={() => navigate('/relatorios')}
                 className="flex flex-col items-center justify-center p-4 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-600 transition-colors border border-slate-200 col-span-2"
               >
                 <svg className="w-6 h-6 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                <span className="text-sm font-medium">Gerar Relatório</span>
+                <span className="text-sm font-medium">Ver Relatórios</span>
               </button>
             </div>
           </div>
 
           <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-             <h2 className="text-lg font-semibold text-gray-900 mb-4 font-title">Itens em Alerta</h2>
-             <ul className="space-y-4">
-               {['Item B'].map((item, idx) => (
-                 <li key={idx} className="flex justify-between items-center p-3 bg-red-50 rounded-lg border border-red-100">
-                   <span className="text-sm font-medium text-red-900">{item}</span>
-                   <span className="text-xs font-bold text-red-600 px-2 py-1 bg-red-100 rounded">Estoque Baixo</span>
-                 </li>
-               ))}
-             </ul>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4 font-title">Itens em Alerta</h2>
+            <ul className="space-y-4">
+              {itensAlerta.length === 0 ? (
+                <li className="text-sm text-slate-500">Nenhum item em alerta.</li>
+              ) : itensAlerta.map((item) => (
+                <li key={item.id} className="flex justify-between items-center p-3 bg-red-50 rounded-lg border border-red-100">
+                  <span className="text-sm font-medium text-red-900">{item.name}</span>
+                  <span className="text-xs font-bold text-red-600 px-2 py-1 bg-red-100 rounded">
+                    {item.quantity}/{item.min_quantity} {item.unit}
+                  </span>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </div>
 
-      {/* RENDERIZAÇÃO DOS MODAIS */}
-      <ModalProduto 
-        isOpen={modalProdutoAberto} 
-        onClose={() => setModalProdutoAberto(false)} 
-        categorias={categoriasMock} 
-      />
-      
-      <ModalRelatorio 
-        isOpen={modalRelatorioAberto} 
-        onClose={() => setModalRelatorioAberto(false)} 
-        categorias={['Categoria A', 'Categoria B', 'Categoria C']}
-      />
+      {canManageProducts && (
+        <ModalProduto
+          isOpen={modalProdutoAberto}
+          onClose={() => setModalProdutoAberto(false)}
+          categorias={categorias}
+          onSalvar={salvarProduto}
+        />
+      )}
     </div>
   );
 }

@@ -2,15 +2,17 @@ import { Eye, EyeOff } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button, Card, Input } from '../../components/ui';
+import { useAuth } from '../../contexts';
 import { PublicLayout } from '../../layouts';
-import { listarUsuarios } from '../../services';
 
 function Login() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const email = String(formData.get('email')).trim().toLowerCase();
@@ -21,23 +23,17 @@ function Login() {
       return;
     }
 
-    const user = listarUsuarios().find(
-      (mockedUser) => mockedUser.email.toLowerCase() === email,
-    );
-
-    if (!user) {
-      setErrorMessage('E-mail não encontrado. Verifique o endereço informado.');
-      return;
-    }
-
-    const { id, name, role } = user;
-    localStorage.setItem(
-      'scge:user',
-      JSON.stringify({ id, name, email: user.email, role }),
-    );
-
+    setLoading(true);
     setErrorMessage('');
-    navigate('/dashboard');
+
+    try {
+      await login(email, password);
+      navigate('/dashboard');
+    } catch (error) {
+      setErrorMessage(error?.message || 'E-mail ou senha inválidos.');
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -105,8 +101,8 @@ function Login() {
             </div>
           )}
 
-          <Button type="submit" size="lg" className="w-full">
-            Entrar no Sistema
+          <Button type="submit" size="lg" className="w-full" disabled={loading}>
+            {loading ? 'Entrando...' : 'Entrar no Sistema'}
           </Button>
         </form>
       </Card>

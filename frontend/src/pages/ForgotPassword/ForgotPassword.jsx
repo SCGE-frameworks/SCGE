@@ -2,33 +2,38 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button, Card, Input } from '../../components/ui';
 import { PublicLayout } from '../../layouts';
-import { listarUsuarios } from '../../services';
+import { forgotPasswordApi } from '../../services';
 
 function ForgotPassword() {
   const [email, setEmail] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [resetToken, setResetToken] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
-
     const normalizedEmail = email.trim().toLowerCase();
-    const user = listarUsuarios().find(
-      (mockedUser) => mockedUser.email.toLowerCase() === normalizedEmail,
-    );
 
-    if (!user) {
-      setSuccessMessage('');
-      setErrorMessage(
-        'Nenhuma conta encontrada. Verifique seu e-mail e tente novamente.',
-      );
-      return;
-    }
-
+    setLoading(true);
     setErrorMessage('');
-    setSuccessMessage(
-      'Enviaremos um link de recuperação em instantes.',
-    );
+    setSuccessMessage('');
+    setResetToken('');
+
+    try {
+      const data = await forgotPasswordApi(normalizedEmail);
+      setSuccessMessage(
+        'Se o e-mail estiver cadastrado, use o token abaixo para redefinir sua senha.',
+      );
+
+      if (data?.reset_token) {
+        setResetToken(data.reset_token);
+      }
+    } catch (error) {
+      setErrorMessage(error?.message || 'Não foi possível processar a solicitação.');
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -64,6 +69,19 @@ function ForgotPassword() {
             </div>
           )}
 
+          {resetToken && (
+            <div className="rounded-md border border-brand-200 bg-brand-50 px-3 py-3 text-sm text-brand-800">
+              <p className="font-medium">Token de recuperação (ambiente de desenvolvimento):</p>
+              <p className="mt-2 break-all font-mono text-xs">{resetToken}</p>
+              <Link
+                to={`/reset-password?token=${encodeURIComponent(resetToken)}`}
+                className="mt-3 inline-block text-sm font-medium text-brand-600 hover:text-brand-700"
+              >
+                Ir para redefinição de senha
+              </Link>
+            </div>
+          )}
+
           {errorMessage && (
             <div
               role="alert"
@@ -73,8 +91,8 @@ function ForgotPassword() {
             </div>
           )}
 
-          <Button type="submit" size="lg" className="w-full">
-            Enviar link de recuperação
+          <Button type="submit" size="lg" className="w-full" disabled={loading}>
+            {loading ? 'Enviando...' : 'Enviar link de recuperação'}
           </Button>
         </form>
       </Card>
