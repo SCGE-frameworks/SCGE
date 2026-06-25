@@ -81,8 +81,15 @@ function isUserActive(user) {
   return true;
 }
 
+function getUserAccessLevel(user, cargos) {
+  if (user.access_level) return Number(user.access_level);
+
+  const cargo = cargos.find((item) => String(item.id) === String(getRoleId(user)));
+  return Number(cargo?.access_level ?? 0);
+}
+
 function isAdminUser(user, cargos) {
-  return getRoleName(user, cargos).toLowerCase().includes('administrador');
+  return getUserAccessLevel(user, cargos) >= 4;
 }
 
 function getCargoName(cargo) {

@@ -1,21 +1,23 @@
-import { PageWrapper } from "../../components/layout/PageWrapper";
+import { PageWrapper } from '../../components/layout/PageWrapper';
 import { useState, useEffect } from 'react';
 import { Button, Card, Input, Table } from '../../components/ui';
-import { listarMovimentacoes, registrarEntrada, registrarSaida, registrarAjuste } from '../../services';
+import { ACCESS_LEVEL } from '../../constants/accessLevels';
+import { useAuth } from '../../contexts';
+import {
+  listarMovimentacoesApi,
+  listarProdutosApi,
+  registrarMovimentacaoApi,
+} from '../../services';
 
 import { ArrowDownCircle, ArrowUpCircle, AlertTriangle, PlusCircle } from 'lucide-react';
 
 const TIPO_CONFIG = {
   IN: { label: 'ENTRADA', cor: 'bg-green-100 text-green-700 border border-green-200', icone: <ArrowDownCircle size={13} /> },
   OUT: { label: 'SAÍDA', cor: 'bg-blue-100 text-blue-700 border border-blue-200', icone: <ArrowUpCircle size={13} /> },
-  ADJUSTMENT: { label: 'AJUSTE', cor: 'bg-amber-100 text-amber-700 border border-amber-200', icone: <AlertTriangle size={13} /> },
+  ADJUSTMENT: { label: 'PERDA', cor: 'bg-amber-100 text-amber-700 border border-amber-200', icone: <AlertTriangle size={13} /> },
 };
 
 const MOTIVOS = ['Reposição Fornecedor', 'Venda Direta', 'Ajuste de Inventário', 'Avaria no Transporte', 'Projeto Interno', 'Outro'];
-
-const ESTOQUE_DISPONIVEL = 142;
-
-const hoje = () => new Date().toISOString().slice(0, 10);
 
 const formatarData = (iso) => {
   const d = new Date(iso);
@@ -26,24 +28,50 @@ const formatarData = (iso) => {
 };
 
 function Movimentacoes() {
+  const { hasAccess } = useAuth();
+  const canRegister = hasAccess(ACCESS_LEVEL.OPERATOR);
+
   const [movimentacoes, setMovimentacoes] = useState([]);
+  const [produtos, setProdutos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState('');
   const [periodo, setPeriodo] = useState('semana');
   const [ordenar, setOrdenar] = useState('recentes');
-  const [produto, setProduto] = useState('');
+  const [produtoId, setProdutoId] = useState('');
   const [operacao, setOperacao] = useState('IN');
   const [quantidade, setQtd] = useState('');
   const [motivo, setMotivo] = useState('');
-  const [data, setData] = useState(hoje());
+  const [submitting, setSubmitting] = useState(false);
 
-  const carregar = () => setMovimentacoes(listarMovimentacoes());
-  useEffect(() => { carregar(); }, []);
-
+  const produtoSelecionado = produtos.find((p) => String(p.id) === String(produtoId));
   const qtdNum = Number(quantidade);
-  const excede = operacao === 'OUT' && qtdNum > ESTOQUE_DISPONIVEL;
-  const invalido = !produto || !quantidade || !motivo || excede;
+  const excede = operacao === 'OUT' && produtoSelecionado && qtdNum > produtoSelecionado.quantity;
+  const invalido = !produtoId || !quantidade || !motivo || excede || qtdNum <= 0;
+
+  async function carregar() {
+    setLoading(true);
+    setErrorMessage('');
+
+    try {
+      const listaProdutos = await listarProdutosApi();
+      setProdutos(listaProdutos);
+      setMovimentacoes(await listarMovimentacoesApi(listaProdutos));
+    } catch (error) {
+      setErrorMessage(error?.message || 'Não foi possível carregar as movimentações.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    carregar();
+  }, []);
 
   const handleLimpar = () => {
-    setProduto(''); setOperacao('IN'); setQtd(''); setMotivo(''); setData(hoje());
+    setProdutoId('');
+    setOperacao('IN');
+    setQtd('');
+    setMotivo('');
   };
 
   const listaFiltrada = [...movimentacoes]
@@ -58,57 +86,114 @@ function Movimentacoes() {
     .sort((a, b) =>
       ordenar === 'recentes'
         ? new Date(b.created_at) - new Date(a.created_at)
-        : new Date(a.created_at) - new Date(b.created_at)
+        : new Date(a.created_at) - new Date(b.created_at),
     );
 
-  const handleRegistrar = () => {
-    if (invalido) return;
-    const payload = { item_name: produto, item_sku: '', quantity: qtdNum, reason: motivo, user_name: 'Admin', created_at: new Date(data).toISOString(), type: operacao };
-    if (operacao === 'IN') registrarEntrada(payload);
-    else if (operacao === 'OUT') registrarSaida(payload);
-    else registrarAjuste(payload);
-    carregar();
-    handleLimpar();
-  };
+  async function handleRegistrar() {
+    if (invalido || !canRegister) return;
+
+    setSubmitting(true);
+    setErrorMessage('');
+
+    try {
+      await registrarMovimentacaoApi(operacao, {
+        product_id: produtoId,
+        quantity: qtdNum,
+        notes: motivo,
+      });
+      await carregar();
+      handleLimpar();
+    } catch (error) {
+      setErrorMessage(error?.message || 'Não foi possível registrar a movimentação.');
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
   return (
     <PageWrapper title="Movimentações" description="Gerencie entrada e saída de produtos">
-      <Card className="space-y-4">
-        <h2 className="flex items-center gap-2 text-lg font-bold text-brand-500">
-          <PlusCircle size={20} /> Nova Operação
-        </h2>
+      {errorMessage && (
+        <div role="alert" className="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {errorMessage}
+        </div>
+      )}
 
-        <Input label="PRODUTO" value={produto} onChange={(e) => setProduto(e.target.value)} placeholder="Nome do produto" />
+      {canRegister && (
+        <Card className="space-y-4">
+          <h2 className="flex items-center gap-2 text-lg font-bold text-brand-500">
+            <PlusCircle size={20} /> Nova Operação
+          </h2>
 
-        <div className="grid grid-cols-3 gap-4">
           <div>
-            <label className="text-xs font-medium text-gray-600">OPERAÇÃO</label>
-            <select value={operacao} onChange={(e) => setOperacao(e.target.value)} className="h-11 w-full rounded-md border border-gray-300 bg-white px-3 text-sm">
-              <option value="IN">Entrada</option>
-              <option value="OUT">Saída</option>
-              <option value="ADJUSTMENT">Ajuste</option>
+            <label className="text-xs font-medium text-gray-600">PRODUTO</label>
+            <select
+              value={produtoId}
+              onChange={(e) => setProdutoId(e.target.value)}
+              className="mt-1 h-11 w-full rounded-md border border-gray-300 bg-white px-3 text-sm"
+            >
+              <option value="">Selecione um produto</option>
+              {produtos.map((produto) => (
+                <option key={produto.id} value={produto.id}>
+                  {produto.name} ({produto.sku}) — {produto.quantity} {produto.unit}
+                </option>
+              ))}
             </select>
           </div>
-          <Input label="QTD" type="number" min="1" value={quantidade} onChange={(e) => setQtd(e.target.value)} />
-          <Input label="DATA" type="date" value={data} onChange={(e) => setData(e.target.value)} />
-        </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="text-xs font-medium text-gray-600">MOTIVO</label>
-            <select value={motivo} onChange={(e) => setMotivo(e.target.value)} className="h-11 w-full rounded-md border border-gray-300 bg-white px-3 text-sm">
-              <option value="">Selecione</option>
-              {MOTIVOS.map((m) => <option key={m} value={m}>{m}</option>)}
-            </select>
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <label className="text-xs font-medium text-gray-600">OPERAÇÃO</label>
+              <select value={operacao} onChange={(e) => setOperacao(e.target.value)} className="mt-1 h-11 w-full rounded-md border border-gray-300 bg-white px-3 text-sm">
+                <option value="IN">Entrada</option>
+                <option value="OUT">Saída</option>
+                <option value="ADJUSTMENT">Perda</option>
+              </select>
+            </div>
+            <Input label="QTD" type="number" min="1" value={quantidade} onChange={(e) => setQtd(e.target.value)} />
+            <div className="text-xs text-slate-500 flex items-end pb-2">
+              {produtoSelecionado && (
+                <span>Estoque atual: <strong>{produtoSelecionado.quantity} {produtoSelecionado.unit}</strong></span>
+              )}
+            </div>
           </div>
-          <div className="flex gap-2 items-end">
-            <Button variant="primary" onClick={handleRegistrar} disabled={invalido} className="flex-1">Registrar</Button>
-            <Button variant="secondary" onClick={handleLimpar} className="px-4">Limpar</Button>
+
+          {excede && (
+            <p className="text-sm text-red-600">Quantidade maior que o estoque disponível.</p>
+          )}
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-xs font-medium text-gray-600">MOTIVO</label>
+              <select value={motivo} onChange={(e) => setMotivo(e.target.value)} className="mt-1 h-11 w-full rounded-md border border-gray-300 bg-white px-3 text-sm">
+                <option value="">Selecione</option>
+                {MOTIVOS.map((m) => <option key={m} value={m}>{m}</option>)}
+              </select>
+            </div>
+            <div className="flex gap-2 items-end">
+              <Button variant="primary" onClick={handleRegistrar} disabled={invalido || submitting} className="flex-1">
+                {submitting ? 'Registrando...' : 'Registrar'}
+              </Button>
+              <Button variant="secondary" onClick={handleLimpar} className="px-4">Limpar</Button>
+            </div>
           </div>
-        </div>
-      </Card>
+        </Card>
+      )}
+
       <Card className="!p-0 mt-6">
-        <div className="px-6 py-4 bg-slate-50 border-b border-slate-100">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 bg-slate-50 px-6 py-4">
           <h3 className="font-bold">Histórico</h3>
+          <div className="flex gap-2">
+            <select value={periodo} onChange={(e) => setPeriodo(e.target.value)} className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs">
+              <option value="hoje">Hoje</option>
+              <option value="semana">Última semana</option>
+              <option value="mes">Este mês</option>
+              <option value="todos">Todos</option>
+            </select>
+            <select value={ordenar} onChange={(e) => setOrdenar(e.target.value)} className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs">
+              <option value="recentes">Mais recentes</option>
+              <option value="antigos">Mais antigos</option>
+            </select>
+          </div>
         </div>
         <Table>
           <thead>
@@ -121,10 +206,12 @@ function Movimentacoes() {
             </tr>
           </thead>
           <tbody>
-            {listaFiltrada.length === 0 ? (
+            {loading ? (
+              <tr><td colSpan={5} className="px-6 py-8 text-center text-sm text-slate-400">Carregando...</td></tr>
+            ) : listaFiltrada.length === 0 ? (
               <tr><td colSpan={5} className="px-6 py-8 text-center text-sm text-slate-400">Sem registros</td></tr>
             ) : listaFiltrada.map((m) => (
-              <tr key={m.id || Math.random()} className="border-b hover:bg-slate-50">
+              <tr key={m.id} className="border-b hover:bg-slate-50">
                 <td className="px-6 py-4 text-sm">{formatarData(m.created_at).dia} às {formatarData(m.created_at).hora}</td>
                 <td className="px-6 py-4 text-sm font-medium">{m.item_name}</td>
                 <td className="px-6 py-4">
@@ -144,13 +231,3 @@ function Movimentacoes() {
 }
 
 export default Movimentacoes;
-
-
-
-
-
-
-
-
-
-

@@ -1,8 +1,9 @@
 import { Eye, EyeOff } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button, Card, Input } from '../../components/ui';
 import { PublicLayout } from '../../layouts';
+import { resetPasswordApi } from '../../services';
 
 const PASSWORD_RULES = [
   {
@@ -25,11 +26,16 @@ const PASSWORD_RULES = [
 
 function ResetPassword() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const tokenFromUrl = searchParams.get('token') ?? '';
+  const [resetToken, setResetToken] = useState(tokenFromUrl);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const passwordErrors = useMemo(
     () =>
@@ -48,18 +54,33 @@ function ResetPassword() {
   const showConfirmationError =
     submitted && (password !== confirmPassword || !confirmPassword);
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
     setSubmitted(true);
+    setErrorMessage('');
 
     if (passwordErrors.length > 0 || password !== confirmPassword) {
       return;
     }
 
-    setSuccessMessage('Senha alterada com sucesso. Redirecionando para login.');
-    window.setTimeout(() => {
-      navigate('/login');
-    }, 1200);
+    if (!resetToken.trim()) {
+      setErrorMessage('Informe o token de recuperação.');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      await resetPasswordApi(resetToken.trim(), password);
+      setSuccessMessage('Senha alterada com sucesso. Redirecionando para login.');
+      window.setTimeout(() => {
+        navigate('/login');
+      }, 1200);
+    } catch (error) {
+      setErrorMessage(error?.message || 'Não foi possível redefinir a senha.');
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -74,6 +95,15 @@ function ResetPassword() {
               Informe uma senha segura para concluir a recuperação.
             </p>
           </div>
+
+          <Input
+            label="Token de recuperação"
+            name="resetToken"
+            value={resetToken}
+            onChange={(event) => setResetToken(event.target.value)}
+            placeholder="Cole o token recebido"
+            required
+          />
 
           <div className="flex flex-col gap-1">
             <label
@@ -188,8 +218,17 @@ function ResetPassword() {
             </div>
           )}
 
-          <Button type="submit" size="lg" className="w-full">
-            Trocar senha
+          {errorMessage && (
+            <div
+              role="alert"
+              className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm leading-6 text-red-700"
+            >
+              {errorMessage}
+            </div>
+          )}
+
+          <Button type="submit" size="lg" className="w-full" disabled={loading}>
+            {loading ? 'Salvando...' : 'Trocar senha'}
           </Button>
         </form>
       </Card>
