@@ -6,8 +6,14 @@ from models import AccessLevels
 from models import User
 from core import success_message
 from database import get_db
-from schemas import AuthRequest, UserCreate
-from services import auth_login, create_user_service, get_me_service
+from schemas import AuthRequest, ForgotPasswordRequest, ResetPasswordRequest, UserCreate
+from services import (
+    auth_login,
+    create_user_service,
+    forgot_password_service,
+    get_me_service,
+    reset_password_service,
+)
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -33,5 +39,10 @@ def logout(current_user: User = Depends(require_min_access_level(AccessLevels.VI
 
 
 @router.post("/forgot-password")
-def forgot_password():
-    pass
+def forgot_password(payload: ForgotPasswordRequest, db: Session = Depends(get_db)):
+    return forgot_password_service(payload, db)
+
+
+@router.post("/reset-password")
+def reset_password(payload: ResetPasswordRequest, db: Session = Depends(get_db)):
+    return reset_password_service(payload, db)

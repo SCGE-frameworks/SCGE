@@ -59,8 +59,12 @@ def role_delete_service(role_id: int, db: Session):
         ).count()
     )
     
-    if not active_users_count > 0:
-        return error_message("Role can't be deactivated because it has active users", code="ROLE_HAS_USERS", status_code=400)
+    if active_users_count > 0:
+        return error_message(
+            "Role can't be deactivated because it has active users",
+            code="ROLE_HAS_USERS",
+            status_code=400,
+        )
 
     role.is_active = False
     db.commit()

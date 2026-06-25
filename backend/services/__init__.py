@@ -1,4 +1,4 @@
-from .auth_services import auth_login, get_me_service
+from .auth_services import auth_login, forgot_password_service, get_me_service, reset_password_service
 from .category_services import (
     create_category_service,
     delete_category_service,
@@ -36,7 +36,9 @@ from .user_services import (
 
 __all__ = [
     "auth_login",
+    "forgot_password_service",
     "get_me_service",
+    "reset_password_service",
     "create_category_service",
     "delete_category_service",
     "get_category_by_id_service",
