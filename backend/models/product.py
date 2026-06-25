@@ -32,5 +32,6 @@ class Product(Base):
             "minimum_stock": self.minimum_stock,
             "is_active": self.is_active,
             "category_id": self.category_id,
-            "created_at": self.created_at,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "low_stock": self.quantity <= self.minimum_stock,
         }

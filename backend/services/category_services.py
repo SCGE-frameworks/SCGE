@@ -32,10 +32,8 @@ def create_category_service(category: CategoryCreate, db: Session):
 
 def list_categories_service(db: Session):
     categories = db.query(Category).filter(Category.is_active.is_(True)).all()
-    message = "Categories retrieved successfully" if categories else "No categories found"
-
     return success_message(
-        message,
+        "Categories retrieved successfully",
         data={"categories": [category.to_dict() for category in categories]},
     )
 

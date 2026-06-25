@@ -10,9 +10,6 @@ from schemas import MovementCreate
 def list_movements_service(db: Session):
     movements = db.query(Movement).order_by(Movement.movement_date.desc()).all()
 
-    if not movements:
-        return error_message("No movements found", code="NO_MOVEMENTS_FOUND", status_code=404)
-
     return success_message(
         "Movements retrieved successfully",
         data={"movements": [movement.to_dict() for movement in movements]},

@@ -115,10 +115,8 @@ def delete_product_service(product_id: int, db: Session):
 
 def list_products_service(db: Session):
     products = db.query(Product).filter(Product.is_active.is_(True)).all()
-    message = "Products retrieved successfully" if products else "No products found"
-
     return success_message(
-        message,
+        "Products retrieved successfully",
         data={"products": [product.to_dict() for product in products]},
     )
 

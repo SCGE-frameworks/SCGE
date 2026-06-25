@@ -32,7 +32,7 @@ class Movement(Base):
             "id": self.id,
             "type": self.type.value,
             "quantity": self.quantity,
-            "movement_date": self.movement_date,
+            "movement_date": self.movement_date.isoformat() if self.movement_date else None,
             "notes": self.notes,
             "product_id": self.product_id,
             "user_id": self.user_id,
