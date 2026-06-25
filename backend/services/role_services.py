@@ -1,5 +1,3 @@
-from typing import Optional
-
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
@@ -9,7 +7,7 @@ from models import Role, User
 from schemas import RoleCreate
 
 
-def require_role(role_name: Optional[str] = None):
+def require_role(role_name: str | None = None):
     def role_checker(
         current_user: dict = Depends(get_current_user),
         db: Session = Depends(get_db),

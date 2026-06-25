@@ -1,5 +1,3 @@
-from typing import Optional, Tuple
-
 from sqlalchemy.orm import Session
 
 from core import error_message, hash_password, success_message
@@ -7,7 +5,7 @@ from models import Role, User
 from schemas import UserCreate, UserUpdate
 
 
-def _get_role_info(db: Session, role_id: Optional[int]) -> Tuple[Optional[str], Optional[int]]:
+def _get_role_info(db: Session, role_id: int | None) -> tuple[str | None, int | None]:
     if not role_id:
         return None, None
     role = db.query(Role).filter(Role.id == role_id).first()

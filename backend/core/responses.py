@@ -1,9 +1,7 @@
-from typing import Optional
-
 from fastapi.responses import JSONResponse
 
 
-def success_message(message: str, data: Optional[dict] = None):
+def success_message(message: str, data: dict | None = None):
     return {
         "message": message,
         "success": True,

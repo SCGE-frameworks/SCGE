@@ -1,5 +1,3 @@
-from typing import Optional
-
 from pydantic import BaseModel, Field
 
 
@@ -14,10 +12,10 @@ class ProductCreate(BaseModel):
 
 
 class ProductUpdate(BaseModel):
-    name: Optional[str] = Field(default=None, min_length=1, max_length=255)
-    code: Optional[str] = Field(default=None, min_length=1, max_length=255)
-    quantity: Optional[float] = Field(default=None, ge=0)
-    unit_of_measure: Optional[str] = Field(default=None, min_length=1, max_length=50)
-    minimum_stock: Optional[int] = Field(default=None, ge=0)
-    category_id: Optional[int] = Field(default=None, gt=0)
-    is_active: Optional[bool] = None
+    name: str | None = Field(default=None, min_length=1, max_length=255)
+    code: str | None = Field(default=None, min_length=1, max_length=255)
+    quantity: float | None = Field(default=None, ge=0)
+    unit_of_measure: str | None = Field(default=None, min_length=1, max_length=50)
+    minimum_stock: int | None = Field(default=None, ge=0)
+    category_id: int | None = Field(default=None, gt=0)
+    is_active: bool | None = None
