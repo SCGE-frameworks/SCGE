@@ -81,7 +81,16 @@ def require_min_access_level(min_level: AccessLevels):
 
         role = db.query(Role).filter(Role.id == current_user.role_id).first()
         if not role:
-            return error_message("Role not found", code="ROLE_NOT_FOUND", status_code=404)
+            raise HTTPException(
+                status_code=404,
+                detail="No roles found"
+            )
+        
+        if not role.is_active:
+            raise HTTPException(
+                status_code=403,
+                detail="Role is inactive"
+            )
         
         user_level = role.access_level
 
