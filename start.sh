@@ -17,6 +17,13 @@ info() { printf '\n\033[1;34m==> %s\033[0m\n' "$1"; }
 warn() { printf '\033[1;33m%s\033[0m\n' "$1"; }
 fail() { printf '\n\033[1;31mERRO: %s\033[0m\n' "$1" >&2; exit 1; }
 
+# Link clicável no terminal (OSC 8 — VS Code, Windows Terminal, GNOME Terminal, etc.)
+link() {
+  local url="$1"
+  local label="${2:-$url}"
+  printf '  \033]8;;%s\033\\%s\033]8;;\033\\\n' "$url" "$label"
+}
+
 # --- Helper de sudo (funciona com ou sem sudo disponível) ------------------
 SUDO=""
 if [ "$(id -u)" -ne 0 ]; then
@@ -99,9 +106,18 @@ info "Gerando o build do frontend"
 VITE_API_URL="" npm run build
 
 # --- Execução --------------------------------------------------------------
-info "Iniciando o SCGE em http://localhost:8000"
-printf '    Login padrão: admin@scge.com / admin@123\n'
-printf '    Pressione CTRL+C para encerrar.\n'
+printf '\n\033[1;32m════════════════════════════════════════════════════════\033[0m\n'
+printf '\033[1;32m  SCGE pronto! Clique nos links abaixo para acessar:\033[0m\n'
+printf '\033[1;32m════════════════════════════════════════════════════════\033[0m\n\n'
+
+printf '  \033[1mSistema (interface):\033[0m\n'
+link "http://localhost:8000" "http://localhost:8000"
+
+printf '\n  \033[1mAPI (Swagger):\033[0m\n'
+link "http://localhost:8000/docs" "http://localhost:8000/docs"
+
+printf '\n  \033[1mLogin padrão:\033[0m admin@scge.com / admin@123\n'
+printf '  \033[1mEncerrar:\033[0m CTRL+C\n\n'
 
 cd "$ROOT_DIR/backend"
 exec python -m uvicorn app:app --host 0.0.0.0 --port 8000
