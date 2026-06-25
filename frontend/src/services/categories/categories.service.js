@@ -1,42 +1,46 @@
 import { apiRequest } from '../api';
 
-let categories = [
-  { id: 1, name: 'Categoria A', color: 'blue' },
-  { id: 2, name: 'Categoria B', color: 'pink' },
-  { id: 3, name: 'Categoria C', color: 'amber' },
-];
+const CATEGORY_COLORS = ['blue', 'pink', 'amber', 'green', 'purple'];
 
-export const listarCategorias = () => categories;
-
-export const criarCategoria = (data) => {
-  const nova = { id: categories.length + 1, ...data };
-  categories.push(nova);
-  return nova;
-};
-
-export const atualizarCategoria = (id, data) => {
-  const i = categories.findIndex((c) => c.id === Number(id));
-  categories[i] = { ...categories[i], ...data };
-  return categories[i];
-};
-
-export const deletarCategoria = (id) => {
-  categories = categories.filter((c) => c.id !== Number(id));
-};
+function mapCategoryFromApi(category, index) {
+  return {
+    id: category.id,
+    name: category.name,
+    description: category.description,
+    active: category.is_active,
+    color: CATEGORY_COLORS[index % CATEGORY_COLORS.length],
+  };
+}
 
 export async function listarCategoriasApi() {
   const response = await apiRequest('/categories/');
-  const categories = [];
+  const categories = response.data?.categories ?? [];
 
-  for (const category of response.data) {
-    categories.push({
-      id: category.id,
-      name: category.nome,
-      description: category.descricao,
-      active: category.ativo,
-      color: 'blue',
-    });
-  }
+  return categories
+    .filter((category) => category.is_active !== false)
+    .map(mapCategoryFromApi);
+}
 
-  return categories;
+export async function criarCategoriaApi({ name, description }) {
+  const response = await apiRequest('/categories/', {
+    method: 'POST',
+    body: JSON.stringify({ name, description }),
+  });
+
+  return mapCategoryFromApi(response.data.category, 0);
+}
+
+export async function atualizarCategoriaApi(id, { name, description }) {
+  const response = await apiRequest(`/categories/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify({ name, description }),
+  });
+
+  return mapCategoryFromApi(response.data.category, 0);
+}
+
+export async function deletarCategoriaApi(id) {
+  return apiRequest(`/categories/${id}`, {
+    method: 'DELETE',
+  });
 }

@@ -9,7 +9,6 @@ const produtoInicial = {
   quantity: '',
   min_quantity: '',
   unit: 'un',
-  location: '',
 };
 
 function ModalProduto({ isOpen, onClose, categorias, item, onSalvar }) {
@@ -24,7 +23,6 @@ function ModalProduto({ isOpen, onClose, categorias, item, onSalvar }) {
         quantity: item.quantity,
         min_quantity: item.min_quantity,
         unit: item.unit,
-        location: item.location ?? '',
       });
     } else {
       setProduto(produtoInicial);
@@ -54,9 +52,6 @@ function ModalProduto({ isOpen, onClose, categorias, item, onSalvar }) {
       quantity: Number(produto.quantity),
       min_quantity: Number(produto.min_quantity),
       unit: produto.unit,
-      location: produto.location,
-      price: item?.price ?? 0,
-      is_stagnant: item?.is_stagnant ?? false,
     };
 
     try {
@@ -116,7 +111,6 @@ function ModalProduto({ isOpen, onClose, categorias, item, onSalvar }) {
                 <option value="m">Metro (m)</option>
               </select>
             </div>
-            <Input label="Localização no Armazém" name="location" value={produto.location} onChange={alterarCampo} placeholder="Ex: Corredor A" />
           </div>
         </div>
 

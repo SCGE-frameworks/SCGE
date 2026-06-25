@@ -1,21 +1,23 @@
 import { Navigate, Outlet } from 'react-router-dom';
+import { useAuth } from '../../contexts';
 
 function AdminRoute() {
-  const storedUser = localStorage.getItem('scge:user');
+  const { isAuthenticated, isAdmin, loading } = useAuth();
 
-  if (!storedUser) {
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 text-sm text-slate-500">
+        Carregando...
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
-  try {
-    const user = JSON.parse(storedUser);
-    const perfil = user?.cargo_nome || user?.role;
-
-    if (perfil !== 'Administrador') {
-      return <Navigate to="/dashboard" replace />;
-    }
-  } catch {
-    return <Navigate to="/login" replace />;
+  if (!isAdmin) {
+    return <Navigate to="/dashboard" replace />;
   }
 
   return <Outlet />;

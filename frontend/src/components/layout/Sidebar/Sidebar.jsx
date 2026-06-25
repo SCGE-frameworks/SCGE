@@ -8,6 +8,7 @@ import {
   UserCog,
 } from 'lucide-react';
 import { Link, NavLink } from 'react-router-dom';
+import { useAuth } from '../../../contexts';
 
 const menuItems = [
   { label: 'Dashboard', icon: LayoutDashboard, href: '/dashboard' },
@@ -22,21 +23,10 @@ const adminItems = [
 ];
 
 function Sidebar() {
-  const storedUser = localStorage.getItem('scge:user');
-  let isAdmin = false;
+  const { isAdmin, logout, user } = useAuth();
 
-  if (storedUser) {
-    try {
-      const user = JSON.parse(storedUser);
-      const perfil = user?.cargo_nome || user?.role;
-      isAdmin = perfil === 'Administrador';
-    } catch {
-      isAdmin = false;
-    }
-  }
-
-  function handleLogout() {
-    localStorage.removeItem('scge:user');
+  async function handleLogout() {
+    await logout();
   }
 
   return (
@@ -46,6 +36,14 @@ function Sidebar() {
         <p className="mt-1 text-xs uppercase tracking-wide text-gray-600">
           Gestão de Estoque
         </p>
+        {user?.name && (
+          <p className="mt-3 text-xs text-slate-500">
+            {user.name}
+            <span className="mt-1 block font-medium text-slate-600">
+              {user.role_name ?? user.cargo_nome}
+            </span>
+          </p>
+        )}
       </div>
 
       <nav className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">

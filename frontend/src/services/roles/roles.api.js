@@ -7,6 +7,7 @@ function mapRoleFromApi(role) {
     ...role,
     nome: role.name ?? role.nome,
     ativo: role.is_active ?? role.ativo,
+    access_level: role.access_level,
   };
 }
 
@@ -20,6 +21,7 @@ export async function listarCargosApi() {
 export async function criarCargoApi(data) {
   const payload = {
     name: data.nome ?? data.name,
+    access_level: Number(data.access_level ?? data.nivel_acesso ?? 1),
     is_active: data.ativo ?? data.is_active ?? true,
   };
 
@@ -32,6 +34,7 @@ export async function criarCargoApi(data) {
 export async function atualizarCargoApi(id, data) {
   const payload = {
     name: data.nome ?? data.name,
+    access_level: Number(data.access_level ?? data.nivel_acesso ?? 1),
     is_active: data.ativo ?? data.is_active ?? true,
   };
 

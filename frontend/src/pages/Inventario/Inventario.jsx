@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
-import { AlertTriangle, Plus, Pencil, Trash2 } from 'lucide-react';
+import { AlertTriangle, Plus, Pencil, Trash2, Tags } from 'lucide-react';
 import { Button, Card, Table } from '../../components/ui';
+import { ACCESS_LEVEL } from '../../constants/accessLevels';
+import { useAuth } from '../../contexts';
 import { atualizarProdutoApi, criarProdutoApi, deletarProdutoApi, listarCategoriasApi, listarProdutosApi } from '../../services';
 import ModalProduto from './ModalProduto';
+import ModalCategorias from './ModalCategorias';
 
 const coresCategoria = {
   blue:  'bg-blue-100 text-blue-700',
@@ -11,11 +14,15 @@ const coresCategoria = {
 };
 
 function Inventario() {
+  const { hasAccess } = useAuth();
+  const canManage = hasAccess(ACCESS_LEVEL.MANAGER);
+
   const [items, setItems] = useState([]);
   const [categorias, setCategorias] = useState([]);
   const [categoriaFiltro, setCategoriaFiltro] = useState('');
   const [statusFiltro, setStatusFiltro] = useState('');
   const [modalAberto, setModalAberto] = useState(false);
+  const [modalCategoriasAberto, setModalCategoriasAberto] = useState(false);
   const [itemEditando, setItemEditando] = useState(null);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
@@ -25,11 +32,11 @@ function Inventario() {
   }, []);
 
   const totalItens = items.length;
-  const estoqueBaixo = items.filter((i) => i.quantity <= i.min_quantity).length;
+  const estoqueBaixo = items.filter((i) => i.low_stock ?? i.quantity <= i.min_quantity).length;
 
   const buscarCategoria = (categoryId) => categorias.find((c) => String(c.id) === String(categoryId));
 
-  const obterStatus = (item) => item.quantity <= item.min_quantity ? 'Baixo' : 'Suficiente';
+  const obterStatus = (item) => (item.low_stock ?? item.quantity <= item.min_quantity) ? 'Baixo' : 'Suficiente';
 
   const itensFiltrados = items.filter((item) => {
     if (categoriaFiltro && item.category_id !== Number(categoriaFiltro)) return false;
@@ -122,10 +129,18 @@ function Inventario() {
           </select>
         </div>
 
-        <Button variant="primary" onClick={abrirNovoProduto} className="gap-2">
-          <Plus size={16} />
-          Novo Produto
-        </Button>
+        {canManage && (
+          <div className="flex gap-3">
+            <Button variant="secondary" onClick={() => setModalCategoriasAberto(true)} className="gap-2">
+              <Tags size={16} />
+              Categorias
+            </Button>
+            <Button variant="primary" onClick={abrirNovoProduto} className="gap-2">
+              <Plus size={16} />
+              Novo Produto
+            </Button>
+          </div>
+        )}
       </div>
 
       {errorMessage && (
@@ -144,19 +159,19 @@ function Inventario() {
               <th className="py-3 px-4 text-center">Quantidade</th>
               <th className="py-3 px-4 text-center">Estoque Mín.</th>
               <th className="py-3 px-4 text-center">Status</th>
-              <th className="py-3 px-4 text-center">Ações</th>
+              {canManage && <th className="py-3 px-4 text-center">Ações</th>}
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={7} className="px-6 py-8 text-center text-sm text-slate-500">
+                <td colSpan={canManage ? 7 : 6} className="px-6 py-8 text-center text-sm text-slate-500">
                   Carregando inventário...
                 </td>
               </tr>
             ) : itensFiltrados.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-6 py-8 text-center text-sm text-slate-500">
+                <td colSpan={canManage ? 7 : 6} className="px-6 py-8 text-center text-sm text-slate-500">
                   Nenhum produto encontrado.
                 </td>
               </tr>
@@ -181,16 +196,18 @@ function Inventario() {
                       <span className={status === 'Baixo' ? 'text-red-600 font-medium' : 'text-green-600 font-medium'}>{status}</span>
                     </span>
                   </td>
-                  <td className="py-3 px-4 text-sm text-center">
-                    <div className="flex items-center justify-center gap-3">
-                      <button type="button" onClick={() => { setItemEditando(item); setModalAberto(true); }} className="text-slate-400 hover:text-brand-500">
-                        <Pencil size={18} />
-                      </button>
-                      <button type="button" onClick={() => excluirProduto(item.id)} className="text-slate-400 hover:text-red-500">
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
-                  </td>
+                  {canManage && (
+                    <td className="py-3 px-4 text-sm text-center">
+                      <div className="flex items-center justify-center gap-3">
+                        <button type="button" onClick={() => { setItemEditando(item); setModalAberto(true); }} className="text-slate-400 hover:text-brand-500">
+                          <Pencil size={18} />
+                        </button>
+                        <button type="button" onClick={() => excluirProduto(item.id)} className="text-slate-400 hover:text-red-500">
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </td>
+                  )}
                 </tr>
               );
             })}
@@ -199,6 +216,13 @@ function Inventario() {
       </Card>
 
       <ModalProduto isOpen={modalAberto} onClose={() => { setModalAberto(false); setItemEditando(null); }} categorias={categorias} item={itemEditando} onSalvar={salvarProduto} />
+
+      <ModalCategorias
+        isOpen={modalCategoriasAberto}
+        onClose={() => setModalCategoriasAberto(false)}
+        categorias={categorias}
+        onChange={carregarDados}
+      />
     </section>
   );
 }

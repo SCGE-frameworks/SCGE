@@ -1,201 +1,248 @@
-# SCGE - Sistema de Controle e Gestão de Estoque
+# SCGE — Sistema de Controle e Gestão de Estoque
 
-O **SCGE** é uma aplicação web para controle e acompanhamento de estoque. O sistema reúne funcionalidades para controle de usuários, perfis de acesso, produtos em estoque, movimentações e relatórios de apoio à gestão.
+Aplicação web full stack para controle de estoque, desenvolvida no **IFMS — Campus Três Lagoas**. O backend expõe uma API REST com JWT e RBAC; o frontend React consome essa API com interface em português.
 
-O projeto é desenvolvido no contexto acadêmico do **IFMS**, como parte das atividades práticas de desenvolvimento de software.
+**Protótipo Figma:** [Sistema de Estoque](https://www.figma.com/design/axawXFROpTsEGqkq5cjCMz/Sistema-de-Estoque?node-id=3-180)
 
-## Objetivo
+---
 
-- Centralizar o gerenciamento de estoque em uma aplicação web.
-- Reduzir erros causados por processos manuais.
-- Melhorar a visibilidade sobre produtos, movimentações e usuários.
+## Equipe
 
-## Status do projeto
+Ana Laura Martins · Caio Victor Santos Valentim · Diogo Queiroz da Silva · Dirceu Alves Neto · Eduardo Melo Perucci · Fernando Tinno Venceslau · Gabriel Correa de A. Guanais · Hideki Wakui · Hudson Batista Brandão · Inácio Ribeiro Azevedo · João Victor Carrenho Alves · Paulo Henrique R. Rebello
 
-O projeto está em desenvolvimento.
+---
 
-- **Backend:** API desenvolvida com FastAPI.
-- **Frontend:** interface desenvolvida com React + Vite.
-- **Integração com API:** em andamento.
-- Algumas telas ainda utilizam mocks ou fluxos parciais enquanto o backend evolui.
+## Funcionalidades
+
+- Login com JWT, recuperação e redefinição de senha
+- Dashboard com KPIs, alertas e atividades recentes
+- Inventário (CRUD de produtos)
+- Movimentações (entrada, saída e perda)
+- Relatório de estoque baixo com exportação CSV
+- Gestão de usuários e perfis de acesso (admin)
+
+---
+
+## Arquitetura
+
+```text
+Frontend (React + Vite)
+  pages → services/api.js → AuthContext
+              │ HTTP + Bearer JWT
+              ▼
+Backend (FastAPI)
+  routes → services → models → SQLite
+```
+
+Resposta padrão da API: `{ success, message, data }` ou `{ success: false, error: { code, message } }`.
+
+---
 
 ## Tecnologias
 
-### Frontend
+| Camada | Stack |
+|--------|-------|
+| Frontend | React 19, Vite, Tailwind CSS, React Router |
+| Backend | Python, FastAPI, SQLAlchemy, Pydantic, Uvicorn, SQLite |
 
-- React
-- Vite
-- JavaScript
-- Tailwind CSS
-- React Router
-- Lucide React
+---
+
+## Pré-requisitos
+
+- Node.js 18+ e npm
+- Python 3.11+
+- Git
+
+---
+
+## Como executar
 
 ### Backend
-
-- Python
-- FastAPI
-- SQLAlchemy
-- Uvicorn
-- Pydantic
-- SQLite local, com possibilidade futura de PostgreSQL
-
-### Gestão
-
-- Jira
-- GitHub
-- Figma
-
-## Design e Protótipo
-
-O protótipo das telas do SCGE foi desenvolvido no Figma e serve como referência visual para a implementação do frontend.
-
-- [Acessar protótipo no Figma](https://www.figma.com/design/axawXFROpTsEGqkq5cjCMz/Sistema-de-Estoque?node-id=3-180&t=IpvnkfOjhyjIpMe9-1)
-
-O protótipo contempla telas como login, recuperação de senha, dashboard, estoque/inventário, movimentações, relatórios, gestão de usuários e perfis de acesso.
-
-## Estrutura do projeto
-
-```text
-SCGE/
-├── backend/
-│   ├── app.py
-│   ├── core/               # config, JWT, respostas padronizadas
-│   ├── database/           # engine, sessão, Base
-│   ├── models/
-│   ├── schemas/
-│   ├── routes/
-│   └── services/
-├── frontend/
-├── README.md
-└── .gitignore
-```
-
-- **backend:** API em camadas, código e contrato JSON em inglês (`core` + `database`).
-- **frontend:** interface React; telas em português, integração com API via `services/*.api.js`.
-
-## Como executar o backend localmente
-
-No Windows, a partir da raiz do projeto:
 
 ```powershell
 cd backend
 python -m venv ../.venv
 ..\.venv\Scripts\activate
 pip install -r requirements.txt
+copy .env.example .env
 python -m uvicorn app:app --reload
 ```
 
-A API ficará disponível em:
-
-- `http://127.0.0.1:8000`
+- API: `http://127.0.0.1:8000`
 - Swagger: `http://127.0.0.1:8000/docs`
-- ReDoc: `http://127.0.0.1:8000/redoc`
 
-Se necessário, copie `backend/.env.example` para `backend/.env` e ajuste as variáveis de ambiente locais.
+Na primeira execução, o seed cria os perfis padrão e o usuário admin.
 
-## Como executar o frontend localmente
+### Frontend
 
-A partir da raiz do projeto:
+Em outro terminal:
 
 ```powershell
 cd frontend
 npm install
+copy .env.example .env
 npm run dev
 ```
 
-O Vite normalmente executa a aplicação em:
+- App: `http://localhost:5173`
 
-- `http://localhost:5173`
-- `http://127.0.0.1:5173`
-
-## Scripts úteis do frontend
-
-```bash
-npm run dev
-npm run build
-npm run lint
-npm run preview
-```
-
-## Fluxo de branches
-
-- `develop` é a branch principal de desenvolvimento.
-- `master` é usada como branch estável/final.
-- Novas tarefas devem sair da `develop`.
-- Pull requests devem ser abertos preferencialmente para `develop`.
-
-Exemplo:
-
-```bash
-git checkout develop
-git pull origin develop
-git checkout -b feat/front-XX-descricao-da-task
-```
-
-## Padrão de commits
-
-Exemplos:
-
-- `feat(front-XX): implementa tela de gestão de usuários`
-- `fix(front-XX): corrige comportamento da sidebar`
-- `docs(front-XX): atualiza documentação`
-- `refactor(front-XX): reorganiza services`
-
-## Funcionalidades atuais
-
-- Tela de login mockada.
-- Recuperação de senha visual/simulada.
-- Layout autenticado com Sidebar e Header.
-- Rotas protegidas.
-- Navegação administrativa por perfil.
-- Tela de Gestão de Usuários integrada à API.
-- Services reais para usuários e perfis/cargos.
-- Telas de Dashboard, Estoque/Inventário, Movimentações e Relatórios em evolução.
-
-## Rotas principais do frontend
-
-### Públicas
-
-- `/login`
-- `/forgot-password`
-- `/reset-password`
-
-### Internas
-
-- `/dashboard`
-- `/inventario`
-- `/movimentacoes`
-- `/relatorios`
-
-### Administrativas
-
-- `/admin/usuarios`
-- `/admin/perfis-acesso`
-
-## Observações importantes
-
-- Não commitar `.env`.
-- Não commitar `.venv`.
-- Não commitar `node_modules`.
-- Não commitar `dist`.
-- Não commitar banco local gerado para testes.
-- Algumas integrações dependem do backend estar rodando em `http://127.0.0.1:8000`.
-
-## Equipe de desenvolvimento
-
-- Ana Laura Martins
-- Caio Victor Santos Valentim
-- Diogo Queiroz da Silva
-- Dirceu Alves Neto
-- Eduardo Melo Perucci
-- Fernando Tinno Venceslau
-- Gabriel Correa de A. Guanais
-- Hideki wakui
-- Hudson Batista Brandao
-- Inacio Ribeiro Azevedo
-- Joao Victor Carrenho Alves
-- Paulo Henrique R. Rebello
+> Backend e frontend precisam estar rodando ao mesmo tempo.
 
 ---
 
-Três Lagoas - MS | 2026
+## Como testar
+
+### 1. Subir o projeto
+
+Siga os passos de [Como executar](#como-executar) nos dois terminais.
+
+### 2. Login
+
+1. Acesse `http://localhost:5173/login`
+2. Entre com:
+
+| Campo | Valor |
+|-------|-------|
+| E-mail | `admin@scge.com` |
+| Senha | `admin@123` |
+
+3. Você deve ser redirecionado para o **Dashboard**
+
+### 3. Inventário e categorias
+
+O seed não cria categorias — crie a primeira pela própria interface:
+
+1. Vá em **Estoque** (`/inventario`)
+2. Clique em **Categorias**, adicione uma (nome + descrição) e feche o modal
+3. Clique em **Novo Produto**, preencha os campos e selecione a categoria criada
+4. Salve e confira o produto na tabela
+5. Teste os filtros por categoria e status
+6. Edite e exclua um produto
+
+### 4. Movimentações
+
+1. Vá em **Movimentações** (`/movimentacoes`)
+2. Selecione o produto, escolha **Entrada**, informe quantidade e motivo
+3. Registre e verifique o histórico
+4. Teste **Saída** e **Perda** — a saída não pode exceder o estoque atual
+
+### 5. Dashboard e relatórios
+
+1. No **Dashboard**, confira se os KPIs e alertas refletem os dados cadastrados
+2. Em **Relatórios** (`/relatorios`), veja produtos com estoque baixo
+3. Use **Exportar CSV** para baixar o relatório
+
+### 6. Administração
+
+Como admin, o menu **Administração** aparece na sidebar:
+
+| Tela | O que testar |
+|------|----------------|
+| Gestão de Usuários | Criar, editar e inativar usuário |
+| Perfis de Acesso | Criar, editar e inativar perfil |
+
+### 7. Recuperação de senha
+
+1. Em `/forgot-password`, informe `admin@scge.com`
+2. O token de reset aparece na tela (ambiente de desenvolvimento, sem e-mail)
+3. Clique no link ou vá em `/reset-password` e cole o token
+4. Defina uma nova senha e faça login novamente
+
+### 8. Testar via API (opcional)
+
+Todas as funcionalidades estão disponíveis pela interface. Se quiser inspecionar a API diretamente, use o Swagger (`/docs`) após autorizar com o token:
+
+| Recurso | Endpoints principais |
+|---------|---------------------|
+| Produtos | `GET/POST /products/`, `PUT/DELETE /products/{id}` |
+| Categorias | `GET/POST /categories/`, `PUT/DELETE /categories/{id}` |
+| Movimentações | `GET /movements/`, `POST /movements/entry`, `exit`, `loss` |
+| Relatórios | `GET /reports/low-stock` |
+| Usuários | `GET/POST /users/`, `PUT/DELETE /users/{id}` |
+| Perfis | `GET/POST /roles/`, `PUT/DELETE /roles/{id}` |
+
+### 9. Build do frontend
+
+```powershell
+cd frontend
+npm run build
+```
+
+Se passar sem erros, o frontend está compilando corretamente.
+
+---
+
+## Credenciais e níveis de acesso
+
+| Nível | Perfil | Permissões |
+|-------|--------|------------|
+| 1 | Consulta | Visualizar telas |
+| 2 | Operador | Registrar movimentações |
+| 3 | Gerente | CRUD de produtos e categorias |
+| 4 | Administrador | Usuários e perfis |
+
+O frontend usa o `access_level` do login para exibir menus e ações.
+
+---
+
+## Rotas do frontend
+
+| Tipo | Rotas |
+|------|-------|
+| Públicas | `/login`, `/forgot-password`, `/reset-password` |
+| Autenticadas | `/dashboard`, `/inventario`, `/movimentacoes`, `/relatorios` |
+| Admin (nível 4) | `/admin/usuarios`, `/admin/perfis-acesso` |
+
+---
+
+## Variáveis de ambiente
+
+**Backend** (`backend/.env`):
+
+| Variável | Descrição |
+|----------|-----------|
+| `SECRET_KEY` | Chave JWT |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | Expiração do token |
+| `PASSWORD_RESET_EXPIRE_MINUTES` | Expiração do reset |
+| `CORS_ORIGINS` | Origens permitidas |
+
+**Frontend** (`frontend/.env`):
+
+| Variável | Descrição |
+|----------|-----------|
+| `VITE_API_URL` | URL da API (padrão: `http://127.0.0.1:8000`) |
+
+---
+
+## Estrutura do repositório
+
+```text
+SCGE/
+├── backend/          # API FastAPI
+├── frontend/         # App React
+├── docs/             # Documentação técnica
+└── README.md
+```
+
+---
+
+## Fluxo de desenvolvimento
+
+- Branch principal: `develop` · Estável: `master`
+- Novas tarefas: `feat/front-XX-descricao` ou `feat/back-XX-descricao`
+- Commits: `feat(front-XX): descrição`, `fix(back-XX): descrição`
+
+Documentação extra: `docs/backend-routes-access.md`
+
+---
+
+## Observações
+
+- Não commitar `.env`, `.venv`, `node_modules`, `dist` nem `scge.db`
+- O CORS do backend aceita apenas o frontend (`http://localhost:5173` e `http://127.0.0.1:5173`); se `npm run dev` falhar por porta ocupada, encerre o Vite antigo antes de subir de novo
+- Se o banco estiver desatualizado após mudanças de schema, delete `backend/scge.db` e reinicie o backend
+- Em desenvolvimento, o token de reset de senha é retornado na API (sem envio de e-mail)
+
+---
+
+**IFMS — Campus Três Lagoas · MS · 2026**
