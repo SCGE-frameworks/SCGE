@@ -16,7 +16,7 @@ def create_category_service(category: CategoryCreate, db: Session):
         existing.description = category.description
         db.commit()
         db.refresh(existing)
-        return success_message("Category reactivated successfully", data=existing.to_dict())
+        return success_message("Category reactivated successfully", data={"category": existing.to_dict()})
 
     new_category = Category(
         name=category.name,
@@ -27,7 +27,7 @@ def create_category_service(category: CategoryCreate, db: Session):
     db.commit()
     db.refresh(new_category)
 
-    return success_message("Category created successfully", data=new_category.to_dict())
+    return success_message("Category created successfully", data={"category": new_category.to_dict()})
 
 
 def list_categories_service(db: Session):
@@ -49,7 +49,7 @@ def get_category_by_id_service(category_id: int, db: Session):
     if not category.is_active:
         return error_message("Category is inactive", code="CATEGORY_INACTIVE", status_code=404)
 
-    return success_message("Category retrieved successfully", data=category.to_dict())
+    return success_message("Category retrieved successfully", data={"category": category.to_dict()})
 
 
 def update_category_service(category_id: int, category_data: CategoryUpdate, db: Session):
@@ -84,7 +84,7 @@ def update_category_service(category_id: int, category_data: CategoryUpdate, db:
     db.commit()
     db.refresh(category)
 
-    return success_message("Category updated successfully", data=category.to_dict())
+    return success_message("Category updated successfully", data={"category": category.to_dict()})
 
 
 def delete_category_service(category_id: int, db: Session):
@@ -100,4 +100,4 @@ def delete_category_service(category_id: int, db: Session):
     db.commit()
     db.refresh(category)
 
-    return success_message("Category deactivated successfully", data=category.to_dict())
+    return success_message("Category deactivated successfully", data={"category": category.to_dict()})

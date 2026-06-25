@@ -32,7 +32,7 @@ def require_role(role_name: str | None = None):
 
         return success_message(
             "Access granted",
-            data={"user_id": user.id, "role": role.name},
+            data={"role_check": {"user_id": user.id, "role": role.name}},
         )
 
     return role_checker
@@ -47,7 +47,10 @@ def role_create_service(role_data: RoleCreate, db: Session):
     db.commit()
     db.refresh(new_role)
 
-    return success_message("Role created successfully", data=new_role.to_dict())
+    return success_message(
+        "Role created successfully", 
+        data={"role": new_role.to_dict()}
+    )
 
 
 def role_update_service(role_id: int, role_data: RoleCreate, db: Session):
@@ -68,7 +71,10 @@ def role_update_service(role_id: int, role_data: RoleCreate, db: Session):
     db.commit()
     db.refresh(role)
 
-    return success_message("Role updated successfully", data=role.to_dict())
+    return success_message(
+        "Role updated successfully", 
+        data={"role": role.to_dict()}
+    )
 
 
 def role_delete_service(role_id: int, db: Session):
@@ -84,7 +90,10 @@ def role_delete_service(role_id: int, db: Session):
     db.commit()
     db.refresh(role)
 
-    return success_message("Role deactivated successfully", data=role.to_dict())
+    return success_message(
+        "Role deactivated successfully", 
+        data={"role": role.to_dict()}
+    )
 
 
 def role_list_service(db: Session):

@@ -38,8 +38,10 @@ def get_user_service(user_id: int, db: Session):
 
     return success_message(
         "User retrieved successfully",
-        data=_user_to_dict(user, db),
+        data={"user": _user_to_dict(user, db)},
     )
+
+        
 
 
 def create_user_service(user: UserCreate, db: Session):
@@ -61,7 +63,7 @@ def create_user_service(user: UserCreate, db: Session):
 
     return success_message(
         "User created successfully",
-        data=_user_to_dict(new_user, db),
+        data={"user": _user_to_dict(new_user, db)},
     )
 
 
@@ -92,7 +94,7 @@ def update_user_service(user_id: int, data: UserUpdate, db: Session):
 
     return success_message(
         "User updated successfully",
-        data=_user_to_dict(user, db),
+        data={"user": _user_to_dict(user, db)},
     )
 
 
@@ -108,5 +110,5 @@ def delete_user_service(user_id: int, db: Session):
 
     return success_message(
         "User deactivated successfully",
-        data=_user_to_dict(user, db),
+        data={"user": _user_to_dict(user, db)},
     )
