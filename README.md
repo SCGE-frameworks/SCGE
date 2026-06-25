@@ -8,20 +8,22 @@ Aplicação web full stack para controle de estoque, desenvolvida no **IFMS — 
 
 ### Forma recomendada — um único comando (Linux/Ubuntu)
 
-**Pré-requisitos:** `python3` (3.11+), `python3-venv`, `node` (18+) e `npm`.
-
 ```bash
 git clone <url-do-repositorio>
 cd SCGE
 bash start.sh
 ```
 
-O script faz tudo automaticamente:
+O script faz **tudo** automaticamente:
 
-1. Cria o ambiente virtual do backend e instala as dependências Python
-2. Gera o arquivo `backend/.env` (se ainda não existir)
-3. Instala as dependências do frontend e gera o build de produção
-4. Sobe a aplicação completa na porta **8000**
+1. Instala o Node.js e o Python (com `venv`/`pip`) caso ainda não estejam presentes
+2. Cria o ambiente virtual do backend e instala as dependências Python
+3. Gera o arquivo `backend/.env` (se ainda não existir)
+4. Instala as dependências do frontend e gera o build de produção
+5. Sobe a aplicação completa na porta **8000**
+
+> A instalação de Node/Python usa `apt` e pode pedir a senha do `sudo`. Em
+> sistemas que não usam `apt`, instale Node 18+ e Python 3.11+ manualmente antes.
 
 **Acesse no navegador:**
 
