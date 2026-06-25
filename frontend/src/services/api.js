@@ -1,7 +1,7 @@
 import { getApiErrorMessage } from './api-error';
 import { getToken } from './auth/auth.storage';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:8000';
+const API_BASE_URL = import.meta.env.VITE_API_URL ?? '';
 
 export async function apiRequest(path, options = {}) {
   const token = getToken();

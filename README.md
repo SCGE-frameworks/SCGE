@@ -57,14 +57,35 @@ Resposta padrão da API: `{ success, message, data }` ou `{ success: false, erro
 
 ## Como executar
 
-### Backend
+### Opção 1 — Um único comando (Linux/Ubuntu)
 
-```powershell
+Pré-requisitos: `python3` (3.11+), `python3-venv` e `node` (18+) instalados.
+
+```bash
+bash start.sh
+```
+
+O script instala as dependências do backend e do frontend, gera o build do
+frontend e sobe **tudo na mesma porta**. Ao terminar, acesse:
+
+- Aplicação: `http://localhost:8000`
+- Swagger (API): `http://localhost:8000/docs`
+
+Login padrão: `admin@scge.com` / `admin@123`. Pressione `CTRL+C` para encerrar.
+
+> Nesse modo o backend serve a interface já compilada — não há segundo servidor
+> nem configuração de CORS a ajustar.
+
+### Opção 2 — Manual (desenvolvimento)
+
+**Backend:**
+
+```bash
 cd backend
-python -m venv ../.venv
-..\.venv\Scripts\activate
+python3 -m venv .venv
+source .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-copy .env.example .env
+cp .env.example .env               # Windows: copy .env.example .env
 python -m uvicorn app:app --reload
 ```
 
@@ -73,20 +94,19 @@ python -m uvicorn app:app --reload
 
 Na primeira execução, o seed cria os perfis padrão e o usuário admin.
 
-### Frontend
+**Frontend** (em outro terminal):
 
-Em outro terminal:
-
-```powershell
+```bash
 cd frontend
 npm install
-copy .env.example .env
+cp .env.example .env               # Windows: copy .env.example .env
 npm run dev
 ```
 
 - App: `http://localhost:5173`
 
-> Backend e frontend precisam estar rodando ao mesmo tempo.
+> No modo manual, backend e frontend rodam ao mesmo tempo (o frontend em `5173`
+> consome a API em `8000`).
 
 ---
 
@@ -94,11 +114,12 @@ npm run dev
 
 ### 1. Subir o projeto
 
-Siga os passos de [Como executar](#como-executar) nos dois terminais.
+Use a [Opção 1 (`bash start.sh`)](#opção-1--um-único-comando-linuxubuntu) e abra
+`http://localhost:8000`. (No modo manual, abra `http://localhost:5173`.)
 
 ### 2. Login
 
-1. Acesse `http://localhost:5173/login`
+1. Acesse `/login`
 2. Entre com:
 
 | Campo | Valor |
@@ -218,9 +239,10 @@ O frontend usa o `access_level` do login para exibir menus e ações.
 
 ```text
 SCGE/
-├── backend/          # API FastAPI
+├── backend/          # API FastAPI (também serve o build do frontend)
 ├── frontend/         # App React
 ├── docs/             # Documentação técnica
+├── start.sh          # Setup + execução em um único comando (Linux)
 └── README.md
 ```
 
