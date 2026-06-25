@@ -21,7 +21,6 @@ from .product_services import (
     update_product_service,
 )
 from .role_services import (
-    require_role,
     role_create_service,
     role_delete_service,
     role_list_service,
@@ -53,7 +52,6 @@ __all__ = [
     "get_product_by_id_service",
     "list_products_service",
     "update_product_service",
-    "require_role",
     "role_create_service",
     "role_delete_service",
     "role_list_service",

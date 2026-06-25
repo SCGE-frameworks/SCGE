@@ -1,41 +1,8 @@
-from fastapi import Depends
-from sqlalchemy.orm import Session, query
+from sqlalchemy.orm import Session
 
-from core import error_message, get_current_user, success_message
-from database import get_db
+from core import error_message, success_message
 from models import Role, User
 from schemas import RoleCreate
-
-
-def require_role(role_name: str | None = None):
-    def role_checker(
-        current_user: dict = Depends(get_current_user),
-        db: Session = Depends(get_db),
-    ):
-        if role_name is None:
-            return error_message("Role name is required", code="ROLE_NOT_FOUND", status_code=404)
-
-        if not isinstance(current_user, dict) or not current_user.get("user_id"):
-            return error_message("User not found", code="USERS_NOT_FOUND", status_code=404)
-
-        role = db.query(Role).filter(Role.name.ilike(f"%{role_name}%")).first()
-        user = db.query(User).filter(User.id == current_user["user_id"]).first()
-
-        if role is None:
-            return error_message("Role not found", code="ROLE_NOT_FOUND", status_code=404)
-
-        if not user or not user.role_id:
-            return error_message("User has no assigned role", code="ROLE_NOT_FOUND", status_code=404)
-
-        if user.role_id != role.id:
-            return error_message("Forbidden", code="FORBIDDEN", status_code=403)
-
-        return success_message(
-            "Access granted",
-            data={"role_check": {"user_id": user.id, "role": role.name}},
-        )
-
-    return role_checker
 
 
 def role_create_service(role_data: RoleCreate, db: Session):

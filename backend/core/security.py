@@ -6,14 +6,22 @@ from fastapi.security import HTTPBearer
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
-from core import error_message
 from models.role import AccessLevels
-from database import get_db
 from models import Role, User
 from core.config import ACCESS_TOKEN_EXPIRE_MINUTES, ALGORITHM, SECRET_KEY
 
 pwd_context = CryptContext(schemes=["bcrypt"])
 security = HTTPBearer()
+
+
+def get_db():
+    from database.session import SessionLocal
+
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 
 def hash_password(password: str) -> str:
