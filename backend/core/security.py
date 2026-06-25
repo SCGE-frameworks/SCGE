@@ -1,9 +1,9 @@
 from datetime import datetime, timedelta, timezone
 
+import bcrypt
 import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer
-from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
 from models.role import AccessLevels
@@ -15,7 +15,6 @@ from core.config import (
     SECRET_KEY,
 )
 
-pwd_context = CryptContext(schemes=["bcrypt"])
 security = HTTPBearer()
 
 
@@ -30,14 +29,22 @@ def get_db():
 
 
 def hash_password(password: str) -> str:
-    if len(password.encode("utf-8")) > 72:
+    password_bytes = password.encode("utf-8")
+
+    if len(password_bytes) > 72:
         raise ValueError("Password is too long")
 
-    return pwd_context.hash(password)
+    return bcrypt.hashpw(password_bytes, bcrypt.gensalt()).decode("utf-8")
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+    try:
+        return bcrypt.checkpw(
+            plain_password.encode("utf-8"),
+            hashed_password.encode("utf-8"),
+        )
+    except ValueError:
+        return False
 
 
 def create_access_token(data: dict) -> str:
