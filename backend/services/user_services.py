@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
 from core import error_message, hash_password, success_message
-from models import Role, User
+from models import AccessLevels, Role, User
 from schemas import UserCreate, UserUpdate
 
 
@@ -103,6 +103,24 @@ def delete_user_service(user_id: int, db: Session):
 
     if not user:
         return error_message("User not found", code="USER_NOT_FOUND", status_code=404)
+
+    user_role = db.query(Role).filter(Role.id == user.role_id, Role.is_active.is_(True)).first()
+    if not user_role:
+        return error_message("User role not found", code="USER_ROLE_NOT_FOUND", status_code=404)
+
+    if user_role.access_level == AccessLevels.ADMIN:
+        admin_users_count = (
+            db.query(User)
+            .join(Role, User.role_id == Role.id)
+            .filter(
+                User.is_active.is_(True),
+                Role.access_level == AccessLevels.ADMIN,
+                Role.is_active.is_(True)
+            )
+        ).count()
+
+        if admin_users_count <= 1:
+            return error_message("Cannot delete the last admin user", code="LAST_ADMIN_USER", status_code=400)
 
     user.is_active = False
     db.commit()
